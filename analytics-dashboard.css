@@ -1,0 +1,326 @@
+/* ---- At a Glance (clean & friendly) ---- */
+.glance-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.glance-tile { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 20px 22px; }
+.glance-ico { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; margin-bottom: 14px; }
+.glance-val { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); font-variant-numeric: tabular-nums; }
+.glance-unit { font-size: 15px; font-weight: 600; color: var(--text-secondary); }
+.glance-label { font-size: 13.5px; font-weight: 600; color: var(--text); margin-top: 6px; }
+.glance-sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+
+.glance-hi-list { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
+.glance-hi { display: flex; gap: 13px; align-items: flex-start; }
+.glance-hi-ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; }
+.glance-hi-head { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.glance-hi-text { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 3px; }
+
+@media (max-width: 900px) {
+  .glance-tiles, .glance-hi-list { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   Event Intelligence Dashboard
+   Matches SpatialChat room UI: floating rounded cards, indigo
+   accent, soft shadows (light) / hairline borders (dark)
+   ============================================================ */
+
+.eid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 248px 1fr;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+/* ---- Sidebar ---- */
+.eid-side {
+  display: flex; flex-direction: column;
+  padding: 16px 12px;
+  gap: 4px;
+  overflow-y: auto;
+  background: var(--bg-elevated);
+  border-right: 1px solid var(--border);
+}
+.eid-logo { display: flex; align-items: center; gap: 9px; padding: 6px 8px 18px; }
+.eid-logo-mark { display: inline-flex; }
+.eid-logo-mark img { height: 25px; width: auto; display: block; }
+.eid-logo-word { height: 16px; width: auto; display: block; }
+[data-theme="dark"] .eid-logo-word { filter: invert(1) brightness(1.05); }
+
+.eid-nav-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-tertiary); padding: 14px 12px 6px;
+}
+.eid-nav-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 9px 12px; border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; transition: all 120ms var(--ease-out);
+  width: 100%; text-align: left;
+}
+.eid-nav-item:hover { background: var(--surface); color: var(--text); }
+.eid-nav-item.active { background: rgba(91,91,245,0.10); color: var(--brand-indigo); }
+[data-theme="dark"] .eid-nav-item.active { background: rgba(91,91,245,0.18); color: #B7B7FF; }
+.eid-nav-ico { display: grid; place-items: center; width: 18px; flex-shrink: 0; }
+
+.eid-event-pick {
+  margin-top: auto;
+  padding: 12px 8px 4px;
+}
+.eid-event-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px; border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer; transition: border-color 120ms var(--ease-out);
+}
+.eid-event-card:hover { border-color: var(--border-strong); }
+.eid-event-dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
+.eid-event-card-name { flex: 1; font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; }
+
+/* ---- Main ---- */
+.eid-main { overflow-y: auto; }
+.eid-topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 32px;
+  position: sticky; top: 0; z-index: 6;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.eid-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
+.eid-breadcrumb b { color: var(--text); font-weight: 600; }
+.eid-top-actions { margin-left: auto; display: flex; gap: 8px; }
+
+.eid-body { padding: 8px 32px 48px; }
+
+/* ---- Event hero header ---- */
+.eid-hero {
+  border-radius: var(--radius-2xl);
+  padding: 26px 28px;
+  margin-bottom: 20px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(115deg, #4646E8 0%, #6B5BF5 55%, #9B5BF5 100%);
+  box-shadow: 0 14px 36px rgba(91,91,245,0.28);
+}
+.eid-hero.green { background: linear-gradient(115deg, #0F7A43 0%, #16A34A 55%, #45C97D 100%); box-shadow: 0 14px 36px rgba(22,163,74,0.26); }
+.eid-hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 11px; border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.eid-hero-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; max-width: 640px; }
+.eid-hero-meta { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 16px; }
+.eid-hero-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.eid-hero-meta-label { font-size: 11px; opacity: 0.7; font-weight: 500; }
+.eid-hero-meta-val { font-size: 14px; font-weight: 600; }
+.eid-hero-summary {
+  margin-top: 18px; padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.18);
+  font-size: 13.5px; line-height: 1.55; opacity: 0.92; max-width: 760px;
+}
+
+/* ---- KPI strip ---- */
+.eid-kpis {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+  margin-bottom: 20px;
+}
+.eid-kpi {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 18px 18px;
+}
+.eid-kpi-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.eid-kpi-ico { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; }
+.eid-kpi-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; line-height: 1.2; }
+.eid-kpi-value { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); font-variant-numeric: tabular-nums; }
+.eid-kpi-value .unit { font-size: 16px; font-weight: 600; color: var(--text-secondary); margin-left: 2px; }
+.eid-kpi-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 5px; }
+
+/* ---- Section ---- */
+.eid-section { margin-bottom: 22px; }
+.eid-section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.eid-section-title { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
+.eid-section-sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+.eid-section-tag { font-size: 11px; font-weight: 600; color: var(--text-tertiary); }
+
+.eid-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.eid-grid-12 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; }
+
+.eid-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  padding: 20px 22px;
+}
+.eid-card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.eid-card-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; margin-bottom: 14px; }
+
+/* ---- Charts ---- */
+.eid-bars { display: flex; align-items: flex-end; gap: 8px; height: 170px; padding-top: 8px; }
+.eid-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end; }
+.eid-bar {
+  width: 100%; max-width: 40px;
+  background: linear-gradient(180deg, var(--brand-indigo), #8B5BF5);
+  border-radius: 7px 7px 3px 3px;
+  position: relative;
+  transition: height 600ms var(--ease-out);
+  min-height: 3px;
+}
+.eid-bar-count { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 700; color: var(--text); }
+.eid-bar-label { font-size: 10px; color: var(--text-tertiary); white-space: nowrap; }
+
+.area-svg { width: 100%; height: 190px; display: block; }
+.area-axis { font-size: 9.5px; fill: var(--text-tertiary); }
+
+/* ---- Rooms table ---- */
+.eid-room-row { display: grid; grid-template-columns: 1.8fr 1fr 1.4fr 64px; gap: 14px; align-items: center; padding: 12px 0; }
+.eid-room-row + .eid-room-row { border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent); }
+.eid-room-name { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.eid-room-tags { display: flex; gap: 6px; margin-top: 3px; }
+.eid-rtag { font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--surface-2); color: var(--text-secondary); }
+.eid-rtag.gateway { background: rgba(91,91,245,0.14); color: var(--brand-indigo); }
+.eid-rtag.anchor { background: rgba(22,163,74,0.14); color: #16A34A; }
+[data-theme="dark"] .eid-rtag.anchor { color: #4ADE80; }
+.eid-room-share-track { height: 8px; background: var(--surface); border-radius: 999px; overflow: hidden; }
+.eid-room-share-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--brand-indigo), #8B5BF5); }
+.eid-room-stat { font-size: 13px; color: var(--text); font-variant-numeric: tabular-nums; font-weight: 600; }
+.eid-room-stat .sub { font-size: 11px; color: var(--text-tertiary); font-weight: 500; }
+
+/* ---- Donut / segmentation ---- */
+.eid-donut-wrap { display: flex; align-items: center; gap: 26px; }
+.eid-donut { width: 168px; height: 168px; flex-shrink: 0; }
+.eid-donut-center { font-size: 26px; font-weight: 700; fill: var(--text); }
+.eid-donut-center-sub { font-size: 10px; fill: var(--text-tertiary); }
+.eid-legend { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.eid-persona-row { display: flex; gap: 12px; align-items: flex-start; }
+.eid-persona-bar { width: 4px; align-self: stretch; border-radius: 999px; flex-shrink: 0; }
+.eid-persona-info { flex: 1; }
+.eid-persona-top { display: flex; align-items: center; gap: 8px; }
+.eid-persona-name { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.eid-persona-count { font-size: 12px; font-weight: 700; color: var(--text); margin-left: auto; font-variant-numeric: tabular-nums; }
+.eid-persona-meta { font-size: 11.5px; color: var(--text-tertiary); margin-top: 1px; }
+.eid-persona-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.45; }
+
+/* ---- Top attendees ---- */
+.eid-att-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.eid-att {
+  display: flex; gap: 14px; align-items: center;
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: 14px 16px;
+}
+.eid-att-score {
+  width: 50px; height: 50px; border-radius: 14px; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(91,91,245,0.1); color: var(--brand-indigo);
+}
+.eid-att-score-num { font-size: 17px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.eid-att-score-cap { font-size: 8px; font-weight: 600; letter-spacing: 0.05em; opacity: 0.8; text-transform: uppercase; margin-top: 2px; }
+.eid-att-main { flex: 1; min-width: 0; }
+.eid-att-name { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 7px; }
+.eid-att-persona { font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--surface-2); color: var(--text-secondary); }
+.eid-att-role { font-size: 11.5px; color: var(--text-tertiary); margin-top: 1px; }
+.eid-att-stats { display: flex; gap: 14px; margin-top: 7px; }
+.eid-att-stat { font-size: 11.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+.eid-att-stat b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+.eid-att-badges { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+.eid-badge-chip {
+  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary);
+}
+
+/* ---- Journey paths ---- */
+.eid-path-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0;
+}
+.eid-path-row + .eid-path-row { border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent); }
+.eid-path-count {
+  width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px;
+  background: rgba(91,91,245,0.1); color: var(--brand-indigo);
+  display: grid; place-items: center; font-size: 14px; font-weight: 700;
+}
+.eid-path-chips { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.eid-path-chip { font-size: 11.5px; padding: 3px 9px; border-radius: 7px; background: var(--surface); color: var(--text); white-space: nowrap; }
+.eid-path-arrow { color: var(--text-tertiary); display: grid; place-items: center; }
+
+/* ---- Action mix ---- */
+.eid-action-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; }
+.eid-action-row + .eid-action-row { border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent); }
+.eid-action-ico { width: 34px; height: 34px; border-radius: 9px; background: var(--surface); color: var(--brand-indigo); display: grid; place-items: center; flex-shrink: 0; }
+.eid-action-name { font-size: 13px; font-weight: 500; color: var(--text); min-width: 130px; }
+.eid-action-track { flex: 1; height: 8px; background: var(--surface); border-radius: 999px; overflow: hidden; }
+.eid-action-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--brand-indigo), #8B5BF5); }
+.eid-action-count { font-size: 13px; font-weight: 700; color: var(--text); min-width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
+.eid-action-users { font-size: 11px; color: var(--text-tertiary); min-width: 56px; text-align: right; }
+
+/* ---- Badges ---- */
+.eid-badge-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.eid-badge-card { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: var(--radius-lg); background: var(--surface); }
+.eid-badge-mark {
+  width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+  background: linear-gradient(135deg, #5B5BF5, #8B5BF5); color: #fff;
+  display: grid; place-items: center; font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+}
+.eid-badge-info { flex: 1; }
+.eid-badge-name { font-size: 12.5px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 7px; }
+.eid-badge-num { font-size: 11px; font-weight: 700; color: var(--brand-indigo); }
+.eid-badge-desc { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; line-height: 1.4; }
+
+/* ---- Recommendations ---- */
+.eid-rec-list { display: flex; flex-direction: column; gap: 10px; }
+.eid-rec {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: 16px 18px;
+}
+.eid-rec-num {
+  width: 26px; height: 26px; flex-shrink: 0; border-radius: 8px;
+  background: var(--brand-indigo); color: #fff;
+  display: grid; place-items: center; font-size: 13px; font-weight: 700;
+}
+.eid-rec-text { font-size: 13.5px; line-height: 1.55; color: var(--text); }
+
+/* ---- Events list (landing) ---- */
+.eid-events-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.eid-event-tile {
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: var(--radius-2xl); overflow: hidden; cursor: pointer;
+  transition: all 160ms var(--ease-out);
+}
+.eid-event-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: var(--border-strong); }
+.eid-event-banner { height: 96px; position: relative; display: flex; align-items: flex-end; padding: 16px 20px; }
+.eid-event-banner.indigo { background: linear-gradient(115deg, #4646E8, #9B5BF5); }
+.eid-event-banner.green { background: linear-gradient(115deg, #0F7A43, #45C97D); }
+.eid-event-banner-status {
+  position: absolute; top: 14px; right: 16px;
+  font-size: 10.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px;
+  background: rgba(255,255,255,0.22); color: #fff; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.eid-event-banner-name { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.2; text-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+.eid-event-tile-body { padding: 18px 20px; }
+.eid-event-tile-meta { display: flex; gap: 8px; font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
+.eid-event-tile-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.eid-event-tile-kpi-val { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.eid-event-tile-kpi-label { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+
+.eid-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 15px; border-radius: var(--radius-lg);
+  font-size: 13px; font-weight: 500;
+  border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text);
+  transition: background 120ms var(--ease-out);
+}
+.eid-btn:hover { background: var(--surface); }
+.eid-btn.primary { background: var(--brand-indigo); color: #fff; border-color: transparent; }
+.eid-btn.primary:hover { background: var(--brand-indigo-hover); }
+
+@media (max-width: 1200px) {
+  .eid-kpis { grid-template-columns: repeat(3, 1fr); }
+  .eid-att-grid, .eid-events-grid, .eid-badge-grid { grid-template-columns: 1fr; }
+  .eid-grid-2, .eid-grid-12 { grid-template-columns: 1fr; }
+}
