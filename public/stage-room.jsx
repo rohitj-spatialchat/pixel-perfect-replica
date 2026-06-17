@@ -194,7 +194,7 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
           <button className="icon-btn" onClick={onToggleTheme} title="Toggle theme">
             {theme === 'light' ? <Icon.moon size={18}/> : <Icon.sun size={18}/>}
           </button>
-          <button className="btn btn-secondary" onClick={onLeave}><Icon.door size={14}/> Exit stage</button>
+          
         </div>
       </div>
 
