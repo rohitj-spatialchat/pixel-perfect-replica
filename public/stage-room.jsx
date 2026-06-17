@@ -194,7 +194,6 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
           <button className="icon-btn" onClick={onToggleTheme} title="Toggle theme">
             {theme === 'light' ? <Icon.moon size={18}/> : <Icon.sun size={18}/>}
           </button>
-          
         </div>
       </div>
 
