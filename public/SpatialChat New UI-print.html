@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SpatialChat — new UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+<style>
+  /* Print-only overrides */
+  @page {
+    size: 1600px 1000px;
+    margin: 0;
+  }
+
+  @media print {
+    html, body {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      overflow: visible !important;
+      height: auto !important;
+      background: var(--bg) !important;
+    }
+
+    /* Force a fixed viewport for the snapshot */
+    body {
+      width: 1600px !important;
+      height: 1000px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    #root, .app {
+      width: 1600px !important;
+      height: 1000px !important;
+      position: relative !important;
+      inset: auto !important;
+      overflow: hidden !important;
+    }
+
+    /* Kill all animations + transitions so static capture is stable */
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    /* Hide non-essential overlays from the print snapshot */
+    #tweaks-host,
+    #__om-tweaks-root,
+    .toast {
+      display: none !important;
+    }
+
+    /* Show user-menu dropdown closed by default in print */
+    .dropdown { display: none !important; }
+  }
+
+  /* On-screen preview: shrink-to-fit so the user can see what they're about to print */
+  @media screen {
+    html, body { background: #f5f5f5; }
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    #root {
+      width: 1600px;
+      height: 1000px;
+      transform: scale(min(calc((100vw - 32px) / 1600), calc((100vh - 32px) / 1000)));
+      transform-origin: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .app { width: 1600px !important; height: 1000px !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="icons.jsx"></script>
+<script type="text/babel" src="side-panel.jsx"></script>
+<script type="text/babel" src="bottom-bar.jsx"></script>
+<script type="text/babel" src="dashboard.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+
+<script type="text/babel">
+  // Wait for fonts + React mount + a small buffer, then auto-print
+  (async () => {
+    try {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    } catch (e) {}
+    // Wait for #root to be populated by React
+    const start = Date.now();
+    while (!document.querySelector('.app') && Date.now() - start < 5000) {
+      await new Promise(r => setTimeout(r, 50));
+    }
+    await new Promise(r => setTimeout(r, 500));
+    window.print();
+  })();
+</script>
+</body>
+</html>
