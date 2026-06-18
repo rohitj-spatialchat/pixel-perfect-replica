@@ -200,9 +200,9 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
           <img className="word" src="assets/spatialchat-wordmark.png" alt="SpatialChat"/>
         </div>
         <div className="stage-nav-tabs">
-          {['Stage', 'Rooms'].map((t, i) => (
+          {['Stage', 'Rooms', 'Agenda', 'Sponsors'].map((t, i) => (
             <button key={t} className={`stage-nav-tab ${i === 0 ? 'active' : ''}`}
-              onClick={() => { if (t === 'Rooms') setModal('rooms'); }}>{t}</button>
+              onClick={() => { if (t === 'Rooms') setModal('rooms'); if (t === 'Agenda') setModal('agenda'); if (t === 'Sponsors') setModal('sponsors'); }}>{t}</button>
           ))}
         </div>
         <div className="stage-nav-spacer"/>
