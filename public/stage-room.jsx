@@ -415,7 +415,7 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
       {modal === 'destination' && <DestinationModal onClose={() => setModal(null)} showToast={showToast}/>}
       {modal === 'summary' && <SummaryModal onClose={() => setModal(null)} showToast={showToast}/>}
       {modal === 'rooms' && <RoomsModal onClose={() => setModal(null)} showToast={showToast}/>}
-      {modal === 'agenda' && <AgendaModal onClose={() => setModal(null)}/>}
+      {modal === 'agenda' && <AgendaModal onClose={() => setModal(null)} showToast={showToast}/>}
       {modal === 'sponsors' && <SponsorsModal onClose={() => setModal(null)} showToast={showToast}/>}
       {modal === 'customize' && <StageCustomizeModal
         bg={bg} setBg={setBg} logoSize={logoSize} setLogoSize={setLogoSize}
@@ -948,7 +948,7 @@ function SummaryModal({ onClose, showToast }) {
   );
 }
 
-function AgendaModal({ onClose }) {
+function AgendaModal({ onClose, showToast }) {
   return (
     <div className="plat-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="plat-modal mid">
@@ -975,7 +975,11 @@ function AgendaModal({ onClose }) {
                   <span className="sr-room-name">{a.time} · {a.title}{a.live && <span className="sr-room-live">● On now</span>}</span>
                   <span className="sr-room-type">{a.dur} · {a.speaker} · {a.tag}</span>
                 </span>
-                <span className="sr-room-here"><Icon.caretRight size={14}/></span>
+                <button className="plat-cta" style={{ padding: '6px 12px', fontSize: 12 }}
+                  disabled={a.done}
+                  onClick={(e) => { e.stopPropagation(); showToast && showToast(a.done ? 'Session ended' : `Entering ${a.title}…`); if (!a.done) onClose(); }}>
+                  <Icon.door size={13}/> {a.done ? 'Ended' : 'Enter space'}
+                </button>
               </div>
             ))}
           </div>
