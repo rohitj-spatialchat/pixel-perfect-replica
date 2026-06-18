@@ -262,7 +262,7 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
               <div className={`stage-tiles count-${SPEAKERS.length}`}>
                 {SPEAKERS.map((s, i) => (
                   <div key={i} className={`speaker-tile ${i === 0 ? 'speaking' : ''}`} style={{ backgroundImage: `url('${s.photo}')` }}>
-                    <span className="speaker-hd">{quality === '4k' ? '4K' : 'HD'}</span>
+                    {i === 0 && <span className="speaker-hd">{quality === '4k' ? '4K' : 'HD'}</span>}
                     <span className="speaker-name">
                       <span className={`mic-ico ${i === 1 && !micOn ? 'muted' : ''}`}>
                         {(i === 0 || micOn) ? <Icon.mic size={12}/> : <Icon.micOff size={12}/>}
