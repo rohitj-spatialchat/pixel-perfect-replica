@@ -153,6 +153,7 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
   const [tourRole, setTourRole] = useStageState(null); // 'admin' | 'guest' | null
   const [tourMenuOpen, setTourMenuOpen] = useStageState(false);
   const popRef = useStageRef(null);
+  const toastT = useStageRef(null);
 
   const showToast = (m) => { setToast(m); clearTimeout(toastT.current); toastT.current = setTimeout(() => setToast(null), 1900); };
 
