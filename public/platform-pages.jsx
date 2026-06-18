@@ -590,10 +590,10 @@ function CommunityPage() {
   );
 }
 
-/* ---------------- AI Agent ---------------- */
+/* ---------------- SpatialChat AI ---------------- */
 function AIAgentPage({ onToast }) {
   const [msgs, setMsgs] = usePageState([
-    { role: 'agent', text: "Hi Arty 👋 I'm your Event Manager Agent. Tell me what you want to run and I'll set up the whole event — rooms, registration flow, agenda and emails." },
+    { role: 'agent', text: "Hi Arty 👋 I'm SpatialChat AI. Tell me what you want to run and I'll set up the whole event — rooms, registration flow, agenda and emails." },
   ]);
   const [draft, setDraft] = usePageState('');
   const prompts = [
@@ -609,13 +609,13 @@ function AIAgentPage({ onToast }) {
   };
   return (
     <>
-      <PageHead title="AI Agent" sub="Your event copilot — build and run events from a prompt"/>
+      <PageHead title="SpatialChat AI" sub="Your event copilot — build and run events from a prompt"/>
       <div className="ai-wrap">
         <div className="ai-chat">
           <div className="ai-head">
             <span className="ai-head-ava"><Icon.megaphone size={17}/></span>
             <div style={{ flex: 1 }}>
-              <div className="ai-head-name">Event Manager Agent</div>
+              <div className="ai-head-name">SpatialChat AI</div>
               <div className="ai-head-status"><span className="ai-head-dot"/> Online · ready to build</div>
             </div>
             <button className="plat-cta ghost" onClick={() => { setMsgs(m => m.slice(0,1)); onToast && onToast('New chat'); }}><Icon.plus size={14}/> New chat</button>

@@ -15,7 +15,7 @@ const NAV = [
   { id: 'recordings', label: 'Recordings', icon: Icon.video },
   { id: 'networking', label: 'Networking', icon: Icon.share },
   { id: 'community', label: 'Community', icon: Icon.globe },
-  { id: 'ai', label: 'AI Agent', icon: Icon.megaphone },
+  { id: 'ai', label: 'SpatialChat AI', icon: Icon.megaphone },
   { id: 'integrations', label: 'Integrations', icon: Icon.code },
   { sep: true },
   { id: 'billing', label: 'Billing', icon: Icon.receipt },
