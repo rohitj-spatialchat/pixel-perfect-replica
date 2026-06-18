@@ -941,8 +941,9 @@ function AgendaModal({ onClose }) {
           <div className="sr-rooms" style={{ padding: 0, gap: 0, border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
             {AGENDA.map((a, i) => (
               <div key={i} className="sr-room" style={{
-                borderRadius: 0, borderBottom: i === AGENDA.length - 1 ? 'none' : '1px solid var(--border)',
-                background: a.live ? 'color-mix(in srgb, var(--brand) 8%, transparent)' : 'var(--surface)',
+                border: 'none', borderRadius: 0,
+                borderBottom: i === AGENDA.length - 1 ? 'none' : '1px solid var(--border)',
+                background: a.live ? 'rgba(91, 91, 245, 0.08)' : 'var(--surface)',
                 opacity: a.done ? 0.55 : 1,
               }}>
                 <span className="sr-room-ico" style={{ background: a.live ? 'var(--brand-red)' : 'var(--bg-elevated)', color: a.live ? '#fff' : 'var(--text-secondary)' }}>
