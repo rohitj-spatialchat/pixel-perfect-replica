@@ -629,14 +629,14 @@ function AIAgentPage({ onToast }) {
             ))}
           </div>
           <div className="ai-composer">
-            <input placeholder="Ask your Event Manager Agent…" value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}/>
+            <input placeholder="Ask SpatialChat AI…" value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}/>
             <button className="ai-send" onClick={() => send()}><Icon.send size={16}/></button>
           </div>
         </div>
         <div className="ai-side">
           <div className="ai-side-title">Try a prompt</div>
           {prompts.map(p => <button key={p} className="ai-prompt" onClick={() => send(p)}>{p}</button>)}
-          <div className="ai-side-title" style={{ marginTop: 18 }}>Agent skills</div>
+          <div className="ai-side-title" style={{ marginTop: 18 }}>What SpatialChat AI can do</div>
           {[['Create events end-to-end', Icon.calendar],['Generate registration pages', Icon.doc],['Summarize analytics', Icon.chart],['Write attendee emails', Icon.chat]].map(([t, Ic]) => (
             <div key={t} className="ai-skill"><span className="ai-skill-ico"><Ic size={15}/></span>{t}</div>
           ))}
