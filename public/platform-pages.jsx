@@ -395,8 +395,9 @@ function RecordingsPage() {
   const [activeRec, setActiveRec] = usePageState(null);
   const [section, setSection] = usePageState('recordings');
   const ping = (m) => { setToast(m); clearTimeout(window.__recT); window.__recT = setTimeout(() => setToast(null), 1700); };
-  const Clip = window.ClipModal, Share = window.ShareModal;
+  const Clip = window.ClipModal, Share = window.ShareModal, Summary = window.SummaryModal;
   const openClip = (r) => { setActiveRec(r); setModal('clip'); };
+  const openSummary = (r) => { setActiveRec(r); setModal('summary'); };
   const recs = [
     { name: 'Opening Keynote — The Future of Gathering', speaker: 'Arty Starr', dur: '48:12', date: 'May 20', views: '3,204', q: '4K', thumb: 'https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=400&q=80', published: true },
     { name: 'Idea Garden: Designing for Presence', speaker: 'Pritina Irvin', dur: '1:12:40', date: 'May 20', views: '1,486', q: '1080p', thumb: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=400&q=80', published: true },
@@ -442,6 +443,7 @@ function RecordingsPage() {
               <div className="rec-actions">
                 <button className="rec-btn" onClick={() => openClip(r)}><Icon.pencil size={13}/> Edit</button>
                 {section === 'recordings' && <button className="rec-btn" onClick={() => openClip(r)}><Icon.video size={13}/> Clip</button>}
+                {section === 'recordings' && <button className="rec-btn" onClick={() => openSummary(r)}><Icon.doc size={13}/> Summary</button>}
                 <button className="rec-btn" onClick={() => setModal('share')}><Icon.share size={13}/> Share</button>
                 <button className="rec-btn primary" onClick={() => ping(r.published ? 'Opening…' : 'Published')}>{r.published ? 'View' : 'Publish'}</button>
               </div>
@@ -452,6 +454,7 @@ function RecordingsPage() {
       {toast && <div className="toast">{toast}</div>}
       {modal === 'clip' && Clip && <Clip speaker={{ photo: (activeRec && activeRec.thumb) }} onClose={() => setModal(null)} onShare={() => setModal('share')} showToast={ping}/>}
       {modal === 'share' && Share && <Share onClose={() => setModal(null)} showToast={ping}/>}
+      {modal === 'summary' && Summary && <Summary onClose={() => setModal(null)} showToast={ping}/>}
     </>
   );
 }
