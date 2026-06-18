@@ -342,23 +342,25 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
               </button>
             </div>
 
-            {/* Present poll / qa toggles */}
-            <button className={`stage-cbtn ${onStage === 'poll' ? 'on' : ''}`} onClick={() => { setOnStage(onStage === 'poll' ? 'none' : 'poll'); showToast(onStage === 'poll' ? 'Poll hidden' : 'Poll on stage'); }}>
-              <span className="stage-cbtn-ico"><Icon.chart size={19}/></span> Poll
-            </button>
-
             <button className={`stage-raise ${raiseHand ? 'on' : ''}`} onClick={() => { setRaiseHand(r => !r); showToast(raiseHand ? 'Hand lowered' : 'Hand raised ✋'); }}>
               ✋ Raise Hand
             </button>
 
-            {/* Record */}
-            <div style={{ position: 'relative' }} ref={pop === 'rec' ? popRef : null}>
+            {/* Record + Transcribe (grouped) */}
+            <div style={{ position: 'relative', display: 'inline-flex', gap: 6 }} ref={pop === 'rec' ? popRef : null}>
               <button className={`stage-record ${recording ? 'recording' : ''}`} onClick={() => setPop(pop === 'rec' ? null : 'rec')}>
                 <span className="stage-record-dot"/>
                 {recording ? <>Recording <span className="stage-record-time">{fmt(recTime)}</span></> : 'Record'}
               </button>
+              <button
+                className={`stage-cbtn ${transcribing ? 'on' : ''}`}
+                title={transcribing ? 'Stop live transcription' : 'Start live transcription'}
+                onClick={() => { setTranscribing(t => !t); showToast(transcribing ? 'Transcription stopped' : 'Transcribing live'); }}>
+                <span className="stage-cbtn-ico"><Icon.text size={19}/></span>
+                {transcribing ? 'Transcribing' : 'Transcribe'}
+              </button>
               {pop === 'rec' && (
-                <div className="stage-pop" style={{ right: 0, minWidth: 260 }} ref={popRef}>
+                <div className="stage-pop" style={{ right: 0, minWidth: 280 }} ref={popRef}>
                   <div className="stage-pop-title">Recording quality</div>
                   {QUALITIES.map(q => (
                     <button key={q.id} className={`stage-pop-item stage-pop-quality ${quality === q.id ? 'active' : ''}`} onClick={() => { setQuality(q.id); showToast(`Quality: ${q.name}`); }}>
@@ -369,6 +371,9 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
                   <div className="stage-pop-divider"/>
                   <button className="stage-pop-item" onClick={() => { setRecording(r => !r); setPop(null); showToast(recording ? 'Recording stopped' : 'Recording started'); }}>
                     <span style={{ color: recording ? 'var(--brand-red)' : 'var(--text)' }}>{recording ? '■ Stop recording' : '● Start recording'}</span>
+                  </button>
+                  <button className="stage-pop-item" onClick={() => { setTranscribing(t => !t); setPop(null); showToast(transcribing ? 'Transcription stopped' : 'Transcription started — saved to event when finished'); }}>
+                    <span style={{ color: transcribing ? 'var(--brand-red)' : 'var(--text)' }}>{transcribing ? '■ Stop transcription' : '✎ Start transcription'}</span>
                   </button>
                 </div>
               )}
