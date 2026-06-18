@@ -140,6 +140,7 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
   const [onStage, setOnStage] = useStageState('none'); // 'none' | 'poll' | 'qa'
   const [recording, setRecording] = useStageState(false);
   const [recTime, setRecTime] = useStageState(0);
+  const [transcribing, setTranscribing] = useStageState(false);
   const [quality, setQuality] = useStageState('1080');
   const [elapsed, setElapsed] = useStageState(2589); // 43:09
   const [pop, setPop] = useStageState(null); // 'bg' | 'rec' | 'lang' | null
