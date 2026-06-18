@@ -442,7 +442,7 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
           </div>
         )}
       </div>
-      {tourRole && window.StageTour && <window.StageTour role={tourRole} onFinish={() => setTourRole(null)}/>}
+      {tourRole && window.StageTour && React.createElement(window.StageTour, { role: tourRole, onFinish: () => setTourRole(null) })}
     </div>
   );
 }
