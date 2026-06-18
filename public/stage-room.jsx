@@ -400,7 +400,7 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
             {tab === 'Chat' && <StageChat showToast={showToast}/>}
             {tab === 'People' && <StagePeople showToast={showToast}/>}
             {tab === 'Q&A' && <StageQa qa={qa} qaVotes={qaVotes} onUpvote={upvoteQa} onPresent={presentQa} presentedId={onStage === 'qa' ? presentedQa?.id : null}/>}
-            {tab === 'Poll' && <StagePoll pollVote={pollVote} onVote={votePoll} onShowStage={() => { setOnStage('poll'); showToast('Poll on stage'); }}/>}
+            {tab === 'Polls' && <StagePoll pollVote={pollVote} onVote={votePoll} onShowStage={() => { setOnStage('poll'); showToast('Poll on stage'); }}/>}
             {tab === 'Media' && <StageMedia showToast={showToast}/>}
             {tab === 'Docs' && <StageDocs showToast={showToast}/>}
           </div>
@@ -413,6 +413,8 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
       {modal === 'destination' && <DestinationModal onClose={() => setModal(null)} showToast={showToast}/>}
       {modal === 'summary' && <SummaryModal onClose={() => setModal(null)} showToast={showToast}/>}
       {modal === 'rooms' && <RoomsModal onClose={() => setModal(null)} showToast={showToast}/>}
+      {modal === 'agenda' && <AgendaModal onClose={() => setModal(null)}/>}
+      {modal === 'sponsors' && <SponsorsModal onClose={() => setModal(null)} showToast={showToast}/>}
       {modal === 'customize' && <StageCustomizeModal
         bg={bg} setBg={setBg} logoSize={logoSize} setLogoSize={setLogoSize}
         font={stageFont} setFont={setStageFont} logoImg={logoImg} setLogoImg={setLogoImg}
