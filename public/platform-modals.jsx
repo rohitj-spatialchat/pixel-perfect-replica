@@ -193,14 +193,28 @@ function CreateEventModal({ onClose, onToast, inline }) {
   const editTicket = (id, k, v) => setTickets(t => t.map(x => x.id === id ? { ...x, [k]: v } : x));
 
   if (published) {
+    // Build a Google Calendar link with the event details
+    const pad = (n) => String(n).padStart(2, '0');
+    const start = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    start.setUTCHours(17, 0, 0, 0);
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    const fmtG = (d) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+    const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE`
+      + `&text=${encodeURIComponent(eventName)}`
+      + `&dates=${fmtG(start)}/${fmtG(end)}`
+      + `&details=${encodeURIComponent('Join us on SpatialChat. Registration link will be shared.')}`
+      + `&location=${encodeURIComponent('SpatialChat (online)')}`;
     return (
       <div className={inline ? 'fb-inline-wrap' : 'fb-overlay'}>
         <div className="fb-success">
           <div className="fb-success-ico"><Icon.check size={38}/></div>
           <div className="fb-success-h">{eventName} is live 🎉</div>
-          <div className="fb-success-p">Your registration flow is published. Share the link, or open the event space to start customizing rooms.</div>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 24 }}>
+          <div className="fb-success-p">Your registration flow is published. Share the link, add it to your calendar, or open the event space to start customizing rooms.</div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' }}>
             <button className="plat-cta ghost" onClick={() => onToast('Registration link copied')}><Icon.share size={14}/> Copy link</button>
+            <a className="plat-cta ghost" href={gcalUrl} target="_blank" rel="noreferrer" onClick={() => onToast('Opening Google Calendar…')}>
+              <Icon.calendar size={14}/> Add to Google Calendar
+            </a>
             <button className="plat-cta" onClick={onClose}><Icon.door size={14}/> Open event space</button>
           </div>
         </div>

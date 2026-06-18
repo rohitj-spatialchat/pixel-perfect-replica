@@ -63,7 +63,24 @@ const SHARE_DESTS = [
   { id: 'download', name: 'Download', sub: 'MP4 to your device', color: '#5B5BF5', mark: '↓' },
 ];
 
-const SIDE_TABS = ['Chat', 'People', 'Q&A', 'Poll'];
+const SIDE_TABS = ['Chat', 'People', 'Q&A', 'Polls'];
+
+const AGENDA = [
+  { time: '2:30pm', dur: '15 min', title: 'Doors open & networking', speaker: 'Lounge', tag: 'Pre-show', done: true },
+  { time: '2:45pm', dur: '15 min', title: 'Welcome & housekeeping', speaker: 'Drew Brucker', tag: 'Opening', done: true },
+  { time: '3:00pm', dur: '30 min', title: 'Keynote — Events as a channel, not a one-off', speaker: 'Emma Carter', tag: 'Keynote', live: true },
+  { time: '3:30pm', dur: '25 min', title: 'Panel — Turning dwell into participation', speaker: 'Liam Walsh, Sofia Reyes', tag: 'Panel' },
+  { time: '3:55pm', dur: '20 min', title: 'Live Q&A with the speakers', speaker: 'All speakers', tag: 'Q&A' },
+  { time: '4:15pm', dur: '15 min', title: 'Sponsor spotlight — HP Studio', speaker: 'HP', tag: 'Sponsor' },
+  { time: '4:30pm', dur: '30 min', title: 'Breakouts — Pick a room', speaker: 'Self-serve', tag: 'Breakout' },
+];
+
+const SPONSORS = [
+  { name: 'HP', tier: 'Title sponsor', mark: 'hp', color: '#0096D6', blurb: 'Powering the studio behind every broadcast.', cta: 'Visit booth' },
+  { name: 'Sony', tier: 'Stage sponsor', mark: 'S', color: '#111', blurb: 'Cinema-grade audio for hybrid events.', cta: 'Watch reel' },
+  { name: '6sense', tier: 'Lounge sponsor', mark: '6', color: '#00C2CB', blurb: 'Revenue AI for the events channel.', cta: 'Book a demo' },
+  { name: 'Goldcast', tier: 'Networking', mark: 'G', color: '#FF6B35', blurb: 'B2B video for marketers.', cta: 'Get the guide' },
+];
 
 const DM_PEOPLE = [
   { name: 'Emma Carter', photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&q=80', last: 'Great session — let\u2019s sync after', unread: 1,
@@ -123,6 +140,7 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
   const [onStage, setOnStage] = useStageState('none'); // 'none' | 'poll' | 'qa'
   const [recording, setRecording] = useStageState(false);
   const [recTime, setRecTime] = useStageState(0);
+  const [transcribing, setTranscribing] = useStageState(false);
   const [quality, setQuality] = useStageState('1080');
   const [elapsed, setElapsed] = useStageState(2589); // 43:09
   const [pop, setPop] = useStageState(null); // 'bg' | 'rec' | 'lang' | null
@@ -182,9 +200,9 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
           <img className="word" src="assets/spatialchat-wordmark.png" alt="SpatialChat"/>
         </div>
         <div className="stage-nav-tabs">
-          {['Stage', 'Rooms'].map((t, i) => (
+          {['Stage', 'Rooms', 'Agenda', 'Sponsors'].map((t, i) => (
             <button key={t} className={`stage-nav-tab ${i === 0 ? 'active' : ''}`}
-              onClick={() => { if (t === 'Rooms') setModal('rooms'); }}>{t}</button>
+              onClick={() => { if (t === 'Rooms') setModal('rooms'); if (t === 'Agenda') setModal('agenda'); if (t === 'Sponsors') setModal('sponsors'); }}>{t}</button>
           ))}
         </div>
         <div className="stage-nav-spacer"/>
@@ -244,7 +262,7 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
               <div className={`stage-tiles count-${SPEAKERS.length}`}>
                 {SPEAKERS.map((s, i) => (
                   <div key={i} className={`speaker-tile ${i === 0 ? 'speaking' : ''}`} style={{ backgroundImage: `url('${s.photo}')` }}>
-                    <span className="speaker-hd">{quality === '4k' ? '4K' : 'HD'}</span>
+                    {i === 0 && <span className="speaker-hd">{quality === '4k' ? '4K' : 'HD'}</span>}
                     <span className="speaker-name">
                       <span className={`mic-ico ${i === 1 && !micOn ? 'muted' : ''}`}>
                         {(i === 0 || micOn) ? <Icon.mic size={12}/> : <Icon.micOff size={12}/>}
@@ -324,23 +342,25 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
               </button>
             </div>
 
-            {/* Present poll / qa toggles */}
-            <button className={`stage-cbtn ${onStage === 'poll' ? 'on' : ''}`} onClick={() => { setOnStage(onStage === 'poll' ? 'none' : 'poll'); showToast(onStage === 'poll' ? 'Poll hidden' : 'Poll on stage'); }}>
-              <span className="stage-cbtn-ico"><Icon.chart size={19}/></span> Poll
-            </button>
-
             <button className={`stage-raise ${raiseHand ? 'on' : ''}`} onClick={() => { setRaiseHand(r => !r); showToast(raiseHand ? 'Hand lowered' : 'Hand raised ✋'); }}>
               ✋ Raise Hand
             </button>
 
-            {/* Record */}
-            <div style={{ position: 'relative' }} ref={pop === 'rec' ? popRef : null}>
+            {/* Record + Transcribe (grouped) */}
+            <div style={{ position: 'relative', display: 'inline-flex', gap: 6 }} ref={pop === 'rec' ? popRef : null}>
               <button className={`stage-record ${recording ? 'recording' : ''}`} onClick={() => setPop(pop === 'rec' ? null : 'rec')}>
                 <span className="stage-record-dot"/>
                 {recording ? <>Recording <span className="stage-record-time">{fmt(recTime)}</span></> : 'Record'}
               </button>
+              <button
+                className={`stage-cbtn ${transcribing ? 'on' : ''}`}
+                title={transcribing ? 'Stop live transcription' : 'Start live transcription'}
+                onClick={() => { setTranscribing(t => !t); showToast(transcribing ? 'Transcription stopped' : 'Transcribing live'); }}>
+                <span className="stage-cbtn-ico"><Icon.text size={19}/></span>
+                {transcribing ? 'Transcribing' : 'Transcribe'}
+              </button>
               {pop === 'rec' && (
-                <div className="stage-pop" style={{ right: 0, minWidth: 260 }} ref={popRef}>
+                <div className="stage-pop" style={{ right: 0, minWidth: 280 }} ref={popRef}>
                   <div className="stage-pop-title">Recording quality</div>
                   {QUALITIES.map(q => (
                     <button key={q.id} className={`stage-pop-item stage-pop-quality ${quality === q.id ? 'active' : ''}`} onClick={() => { setQuality(q.id); showToast(`Quality: ${q.name}`); }}>
@@ -351,6 +371,9 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
                   <div className="stage-pop-divider"/>
                   <button className="stage-pop-item" onClick={() => { setRecording(r => !r); setPop(null); showToast(recording ? 'Recording stopped' : 'Recording started'); }}>
                     <span style={{ color: recording ? 'var(--brand-red)' : 'var(--text)' }}>{recording ? '■ Stop recording' : '● Start recording'}</span>
+                  </button>
+                  <button className="stage-pop-item" onClick={() => { setTranscribing(t => !t); setPop(null); showToast(transcribing ? 'Transcription stopped' : 'Transcription started — saved to event when finished'); }}>
+                    <span style={{ color: transcribing ? 'var(--brand-red)' : 'var(--text)' }}>{transcribing ? '■ Stop transcription' : '✎ Start transcription'}</span>
                   </button>
                 </div>
               )}
@@ -377,7 +400,7 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
             {tab === 'Chat' && <StageChat showToast={showToast}/>}
             {tab === 'People' && <StagePeople showToast={showToast}/>}
             {tab === 'Q&A' && <StageQa qa={qa} qaVotes={qaVotes} onUpvote={upvoteQa} onPresent={presentQa} presentedId={onStage === 'qa' ? presentedQa?.id : null}/>}
-            {tab === 'Poll' && <StagePoll pollVote={pollVote} onVote={votePoll} onShowStage={() => { setOnStage('poll'); showToast('Poll on stage'); }}/>}
+            {tab === 'Polls' && <StagePoll pollVote={pollVote} onVote={votePoll} onShowStage={() => { setOnStage('poll'); showToast('Poll on stage'); }}/>}
             {tab === 'Media' && <StageMedia showToast={showToast}/>}
             {tab === 'Docs' && <StageDocs showToast={showToast}/>}
           </div>
@@ -390,6 +413,8 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
       {modal === 'destination' && <DestinationModal onClose={() => setModal(null)} showToast={showToast}/>}
       {modal === 'summary' && <SummaryModal onClose={() => setModal(null)} showToast={showToast}/>}
       {modal === 'rooms' && <RoomsModal onClose={() => setModal(null)} showToast={showToast}/>}
+      {modal === 'agenda' && <AgendaModal onClose={() => setModal(null)}/>}
+      {modal === 'sponsors' && <SponsorsModal onClose={() => setModal(null)} showToast={showToast}/>}
       {modal === 'customize' && <StageCustomizeModal
         bg={bg} setBg={setBg} logoSize={logoSize} setLogoSize={setLogoSize}
         font={stageFont} setFont={setStageFont} logoImg={logoImg} setLogoImg={setLogoImg}
@@ -901,4 +926,97 @@ function SummaryModal({ onClose, showToast }) {
   );
 }
 
-Object.assign(window, { StageRoom, ClipModal, ShareModal });
+function AgendaModal({ onClose }) {
+  return (
+    <div className="plat-modal-overlay" onClick={onClose}>
+      <div className="plat-modal" style={{ maxWidth: 720 }} onClick={e => e.stopPropagation()}>
+        <div className="plat-modal-head">
+          <div>
+            <div className="plat-modal-eyebrow">Event agenda</div>
+            <div className="plat-modal-title">Live broadcast — May 20, 2026</div>
+          </div>
+          <button className="plat-modal-close" onClick={onClose}><Icon.close size={18}/></button>
+        </div>
+        <div className="plat-modal-body" style={{ padding: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {AGENDA.map((a, i) => (
+              <div key={i} style={{
+                display: 'grid', gridTemplateColumns: '90px 1fr auto', gap: 16, padding: '14px 20px',
+                borderTop: i === 0 ? 'none' : '1px solid var(--border)',
+                background: a.live ? 'color-mix(in srgb, var(--brand) 8%, transparent)' : 'transparent',
+                opacity: a.done ? 0.55 : 1,
+              }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>{a.time}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{a.dur}</div>
+                </div>
+                <div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
+                    <span style={{
+                      fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5,
+                      padding: '2px 8px', borderRadius: 999, background: 'var(--surface-2)', color: 'var(--text-secondary)',
+                    }}>{a.tag}</span>
+                    {a.live && <span className="stage-live" style={{ fontSize: 10 }}><span className="stage-live-dot"/> ON NOW</span>}
+                  </div>
+                  <div style={{ fontWeight: 600, fontSize: 14 }}>{a.title}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{a.speaker}</div>
+                </div>
+                <div style={{ alignSelf: 'center' }}>
+                  {a.done ? <Icon.check size={16}/> : <Icon.caretRight size={14}/>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="plat-modal-foot">
+          <button className="plat-cta ghost" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SponsorsModal({ onClose, showToast }) {
+  return (
+    <div className="plat-modal-overlay" onClick={onClose}>
+      <div className="plat-modal" style={{ maxWidth: 720 }} onClick={e => e.stopPropagation()}>
+        <div className="plat-modal-head">
+          <div>
+            <div className="plat-modal-eyebrow">Brought to you by</div>
+            <div className="plat-modal-title">Event sponsors</div>
+          </div>
+          <button className="plat-modal-close" onClick={onClose}><Icon.close size={18}/></button>
+        </div>
+        <div className="plat-modal-body">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            {SPONSORS.map(s => (
+              <div key={s.name} style={{
+                border: '1px solid var(--border)', borderRadius: 14, padding: 16,
+                display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--surface)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{
+                    width: 40, height: 40, borderRadius: 10, background: s.color, color: '#fff',
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
+                  }}>{s.mark}</span>
+                  <div>
+                    <div style={{ fontWeight: 600 }}>{s.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{s.tier}</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{s.blurb}</div>
+                <button className="plat-cta ghost" style={{ alignSelf: 'flex-start' }}
+                  onClick={() => showToast(`Opening ${s.name} booth…`)}>{s.cta}</button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="plat-modal-foot">
+          <button className="plat-cta ghost" onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { StageRoom, ClipModal, ShareModal, AgendaModal, SponsorsModal });
