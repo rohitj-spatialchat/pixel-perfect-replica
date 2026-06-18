@@ -423,6 +423,26 @@ function StageRoom({ theme, onToggleTheme, onLeave }) {
         onClose={() => setModal(null)} showToast={showToast}/>}
 
       {toast && <div className="toast">{toast}</div>}
+
+      {/* Tour launcher + tour overlay */}
+      <div style={{ position: 'fixed', bottom: 22, left: 22, zIndex: 50 }}>
+        <button className="tour-launcher" onClick={() => setTourMenuOpen(o => !o)}>
+          <span className="tour-launcher-dot"/> Take a tour
+        </button>
+        {tourMenuOpen && (
+          <div className="tour-role-pop" ref={popRef}>
+            <button onClick={() => { setTourRole('admin'); setTourMenuOpen(false); }}>
+              <span style={{ fontSize: 18 }}>🎛️</span>
+              <span><b>Admin experience</b><span>8 steps · run the broadcast</span></span>
+            </button>
+            <button onClick={() => { setTourRole('guest'); setTourMenuOpen(false); }}>
+              <span style={{ fontSize: 18 }}>👋</span>
+              <span><b>Guest experience</b><span>7 steps · join an event</span></span>
+            </button>
+          </div>
+        )}
+      </div>
+      {tourRole && window.StageTour && <window.StageTour role={tourRole} onFinish={() => setTourRole(null)}/>}
     </div>
   );
 }
