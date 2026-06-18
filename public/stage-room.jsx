@@ -63,7 +63,24 @@ const SHARE_DESTS = [
   { id: 'download', name: 'Download', sub: 'MP4 to your device', color: '#5B5BF5', mark: '↓' },
 ];
 
-const SIDE_TABS = ['Chat', 'People', 'Q&A', 'Poll'];
+const SIDE_TABS = ['Chat', 'People', 'Q&A', 'Polls'];
+
+const AGENDA = [
+  { time: '2:30pm', dur: '15 min', title: 'Doors open & networking', speaker: 'Lounge', tag: 'Pre-show', done: true },
+  { time: '2:45pm', dur: '15 min', title: 'Welcome & housekeeping', speaker: 'Drew Brucker', tag: 'Opening', done: true },
+  { time: '3:00pm', dur: '30 min', title: 'Keynote — Events as a channel, not a one-off', speaker: 'Emma Carter', tag: 'Keynote', live: true },
+  { time: '3:30pm', dur: '25 min', title: 'Panel — Turning dwell into participation', speaker: 'Liam Walsh, Sofia Reyes', tag: 'Panel' },
+  { time: '3:55pm', dur: '20 min', title: 'Live Q&A with the speakers', speaker: 'All speakers', tag: 'Q&A' },
+  { time: '4:15pm', dur: '15 min', title: 'Sponsor spotlight — HP Studio', speaker: 'HP', tag: 'Sponsor' },
+  { time: '4:30pm', dur: '30 min', title: 'Breakouts — Pick a room', speaker: 'Self-serve', tag: 'Breakout' },
+];
+
+const SPONSORS = [
+  { name: 'HP', tier: 'Title sponsor', mark: 'hp', color: '#0096D6', blurb: 'Powering the studio behind every broadcast.', cta: 'Visit booth' },
+  { name: 'Sony', tier: 'Stage sponsor', mark: 'S', color: '#111', blurb: 'Cinema-grade audio for hybrid events.', cta: 'Watch reel' },
+  { name: '6sense', tier: 'Lounge sponsor', mark: '6', color: '#00C2CB', blurb: 'Revenue AI for the events channel.', cta: 'Book a demo' },
+  { name: 'Goldcast', tier: 'Networking', mark: 'G', color: '#FF6B35', blurb: 'B2B video for marketers.', cta: 'Get the guide' },
+];
 
 const DM_PEOPLE = [
   { name: 'Emma Carter', photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&q=80', last: 'Great session — let\u2019s sync after', unread: 1,
