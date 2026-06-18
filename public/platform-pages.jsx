@@ -80,6 +80,37 @@ function AnalyticsView({ onEnterRoom, initialEvent }) {
     );
   }
 
+  const ALL_WIDGETS = [
+    { id: 'kpis', name: 'KPI strip', desc: 'Headline metrics row', icon: Icon.chart },
+    { id: 'pulse', name: 'At a glance', desc: 'Friendly headline read', icon: Icon.star },
+    { id: 'attendance', name: 'Attendance quality', desc: 'Dwell + concurrency', icon: Icon.users },
+    { id: 'rooms', name: 'Room effectiveness', desc: 'Dwell network', icon: Icon.grid },
+    { id: 'journey', name: 'Movement & journey', desc: 'Room flow paths', icon: Icon.share },
+    { id: 'segments', name: 'Attendee segmentation', desc: 'Persona donut', icon: Icon.users },
+    { id: 'roster', name: 'Top attendees', desc: 'Ranked roster', icon: Icon.users },
+    { id: 'interaction', name: 'Interaction analysis', desc: 'Action mix + badges', icon: Icon.chat },
+    { id: 'recs', name: 'Recommendations', desc: 'Suggested next steps', icon: Icon.megaphone },
+  ];
+  const [edit, setEdit] = usePageState(false);
+  const [visible, setVisible] = usePageState(['kpis','pulse','attendance','rooms','journey','segments','roster','interaction','recs']);
+  const [gallery, setGallery] = usePageState(false);
+  const removeW = (id) => setVisible(v => v.filter(x => x !== id));
+  const addW = (id) => { setVisible(v => v.includes(id) ? v : [...v, id]); setGallery(false); };
+  const WIDGET = (id) => {
+    switch (id) {
+      case 'kpis': return <S.KpiStrip k={ev.kpis}/>;
+      case 'pulse': return <EngagementPulse ev={ev}/>;
+      case 'attendance': return <S.AttendanceSection ev={ev}/>;
+      case 'rooms': return <S.RoomsSection ev={ev}/>;
+      case 'journey': return <S.JourneySection ev={ev}/>;
+      case 'segments': return <S.SegmentationSection ev={ev}/>;
+      case 'roster': return <S.RosterSection ev={ev}/>;
+      case 'interaction': return <S.InteractionSection ev={ev}/>;
+      case 'recs': return <S.RecommendationsSection ev={ev}/>;
+      default: return null;
+    }
+  };
+
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 18 }}>
@@ -88,8 +119,14 @@ function AnalyticsView({ onEnterRoom, initialEvent }) {
           <Icon.caretRight size={12}/> <b style={{ color: 'var(--text)' }}>{ev.space}</b>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="plat-cta ghost"><Icon.doc size={14}/> Download PDF</button>
-          <button className="plat-cta ghost"><Icon.upload size={14}/> Raw data (CSV)</button>
+          {edit && <button className="plat-cta" onClick={() => setGallery(true)}><Icon.plus size={14}/> Add widget</button>}
+          <button className={`plat-cta ${edit ? '' : 'ghost'}`} onClick={() => setEdit(e => !e)}>
+            <Icon.pencil size={14}/> {edit ? 'Done editing' : 'Edit dashboard'}
+          </button>
+          {!edit && <>
+            <button className="plat-cta ghost"><Icon.doc size={14}/> Download PDF</button>
+            <button className="plat-cta ghost"><Icon.upload size={14}/> Raw data (CSV)</button>
+          </>}
         </div>
       </div>
       <div className={`eid-hero ${ev.accent === '#16A34A' ? 'green' : ''}`}>
@@ -103,15 +140,59 @@ function AnalyticsView({ onEnterRoom, initialEvent }) {
         </div>
         <div className="eid-hero-summary">{ev.summary}</div>
       </div>
-      <S.KpiStrip k={ev.kpis}/>
-      <EngagementPulse ev={ev}/>
-      <S.AttendanceSection ev={ev}/>
-      <S.RoomsSection ev={ev}/>
-      <S.JourneySection ev={ev}/>
-      <S.SegmentationSection ev={ev}/>
-      <S.RosterSection ev={ev}/>
-      <S.InteractionSection ev={ev}/>
-      <S.RecommendationsSection ev={ev}/>
+
+      {visible.map(id => {
+        const w = ALL_WIDGETS.find(x => x.id === id);
+        return (
+          <div key={id} className={`an-widget ${edit ? 'editing' : ''}`}>
+            {edit && (
+              <div className="an-widget-bar">
+                <span className="an-widget-bar-name"><w.icon size={12}/> {w.name}</span>
+                <button className="an-widget-remove" onClick={() => removeW(id)}><Icon.close size={14}/> Remove</button>
+              </div>
+            )}
+            {WIDGET(id)}
+          </div>
+        );
+      })}
+
+      {edit && (
+        <button className="an-add-tile" onClick={() => setGallery(true)}>
+          <Icon.plus size={18}/> Add a widget
+        </button>
+      )}
+
+      {gallery && (
+        <div className="plat-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setGallery(false); }}>
+          <div className="plat-modal mid">
+            <div className="plat-modal-head">
+              <div>
+                <div className="plat-modal-title">Add a widget</div>
+                <div className="plat-modal-sub">Pick from the widget library to add to your dashboard</div>
+              </div>
+              <button className="plat-modal-close" onClick={() => setGallery(false)}><Icon.close size={18}/></button>
+            </div>
+            <div className="plat-modal-body">
+              <div className="an-gallery">
+                {ALL_WIDGETS.map(w => {
+                  const added = visible.includes(w.id);
+                  return (
+                    <button key={w.id} className={`an-gallery-card ${added ? 'added' : ''}`}
+                      onClick={() => !added && addW(w.id)} disabled={added}>
+                      <span className="an-gallery-ico"><w.icon size={18}/></span>
+                      <div className="an-gallery-info">
+                        <div className="an-gallery-name">{w.name}</div>
+                        <div className="an-gallery-desc">{w.desc}</div>
+                      </div>
+                      <span className="an-gallery-add">{added ? '✓ Added' : '+ Add'}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
