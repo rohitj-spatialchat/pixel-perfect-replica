@@ -928,42 +928,32 @@ function SummaryModal({ onClose, showToast }) {
 
 function AgendaModal({ onClose }) {
   return (
-    <div className="plat-modal-overlay" onClick={onClose}>
-      <div className="plat-modal" style={{ maxWidth: 720 }} onClick={e => e.stopPropagation()}>
+    <div className="plat-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="plat-modal mid">
         <div className="plat-modal-head">
           <div>
-            <div className="plat-modal-eyebrow">Event agenda</div>
-            <div className="plat-modal-title">Live broadcast — May 20, 2026</div>
+            <div className="plat-modal-title">Event agenda</div>
+            <div className="plat-modal-sub">Live broadcast — May 20, 2026</div>
           </div>
           <button className="plat-modal-close" onClick={onClose}><Icon.close size={18}/></button>
         </div>
-        <div className="plat-modal-body" style={{ padding: 0 }}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className="plat-modal-body">
+          <div className="sr-rooms" style={{ padding: 0, gap: 0, border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
             {AGENDA.map((a, i) => (
-              <div key={i} style={{
-                display: 'grid', gridTemplateColumns: '90px 1fr auto', gap: 16, padding: '14px 20px',
-                borderTop: i === 0 ? 'none' : '1px solid var(--border)',
-                background: a.live ? 'color-mix(in srgb, var(--brand) 8%, transparent)' : 'transparent',
+              <div key={i} className="sr-room" style={{
+                border: 'none', borderRadius: 0,
+                borderBottom: i === AGENDA.length - 1 ? 'none' : '1px solid var(--border)',
+                background: a.live ? 'rgba(91, 91, 245, 0.08)' : 'var(--surface)',
                 opacity: a.done ? 0.55 : 1,
               }}>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 13 }}>{a.time}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{a.dur}</div>
-                </div>
-                <div>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
-                    <span style={{
-                      fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5,
-                      padding: '2px 8px', borderRadius: 999, background: 'var(--surface-2)', color: 'var(--text-secondary)',
-                    }}>{a.tag}</span>
-                    {a.live && <span className="stage-live" style={{ fontSize: 10 }}><span className="stage-live-dot"/> ON NOW</span>}
-                  </div>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>{a.title}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{a.speaker}</div>
-                </div>
-                <div style={{ alignSelf: 'center' }}>
-                  {a.done ? <Icon.check size={16}/> : <Icon.caretRight size={14}/>}
-                </div>
+                <span className="sr-room-ico" style={{ background: a.live ? 'var(--brand-red)' : 'var(--bg-elevated)', color: a.live ? '#fff' : 'var(--text-secondary)' }}>
+                  {a.done ? <Icon.check size={16}/> : <Icon.clock size={16}/>}
+                </span>
+                <span className="sr-room-info">
+                  <span className="sr-room-name">{a.time} · {a.title}{a.live && <span className="sr-room-live">● On now</span>}</span>
+                  <span className="sr-room-type">{a.dur} · {a.speaker} · {a.tag}</span>
+                </span>
+                <span className="sr-room-here"><Icon.caretRight size={14}/></span>
               </div>
             ))}
           </div>
@@ -976,38 +966,29 @@ function AgendaModal({ onClose }) {
   );
 }
 
+
 function SponsorsModal({ onClose, showToast }) {
   return (
-    <div className="plat-modal-overlay" onClick={onClose}>
-      <div className="plat-modal" style={{ maxWidth: 720 }} onClick={e => e.stopPropagation()}>
+    <div className="plat-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="plat-modal mid">
         <div className="plat-modal-head">
           <div>
-            <div className="plat-modal-eyebrow">Brought to you by</div>
             <div className="plat-modal-title">Event sponsors</div>
+            <div className="plat-modal-sub">Brought to you by these partners</div>
           </div>
           <button className="plat-modal-close" onClick={onClose}><Icon.close size={18}/></button>
         </div>
         <div className="plat-modal-body">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="sr-rooms" style={{ padding: 0, gap: 12, border: 'none', background: 'transparent' }}>
             {SPONSORS.map(s => (
-              <div key={s.name} style={{
-                border: '1px solid var(--border)', borderRadius: 14, padding: 16,
-                display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--surface)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{
-                    width: 40, height: 40, borderRadius: 10, background: s.color, color: '#fff',
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
-                  }}>{s.mark}</span>
-                  <div>
-                    <div style={{ fontWeight: 600 }}>{s.name}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{s.tier}</div>
-                  </div>
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{s.blurb}</div>
-                <button className="plat-cta ghost" style={{ alignSelf: 'flex-start' }}
-                  onClick={() => showToast(`Opening ${s.name} booth…`)}>{s.cta}</button>
-              </div>
+              <button key={s.name} className="sr-room" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }} onClick={() => showToast(`Opening ${s.name} booth…`)}>
+                <span className="sr-room-ico" style={{ background: s.color, color: '#fff' }}>{s.mark}</span>
+                <span className="sr-room-info">
+                  <span className="sr-room-name">{s.name}<span className="sr-room-type" style={{ marginLeft: 8 }}>{s.tier}</span></span>
+                  <span className="sr-room-type">{s.blurb}</span>
+                </span>
+                <span className="sr-room-here"><Icon.caretRight size={14}/></span>
+              </button>
             ))}
           </div>
         </div>
@@ -1018,5 +999,6 @@ function SponsorsModal({ onClose, showToast }) {
     </div>
   );
 }
+
 
 Object.assign(window, { StageRoom, ClipModal, ShareModal, AgendaModal, SponsorsModal });
