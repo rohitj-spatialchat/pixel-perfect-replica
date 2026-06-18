@@ -863,24 +863,65 @@ function NetworkingPage() {
 
 function SpacesPage({ onEnter }) {
   const spaces = P().spaces;
+  const [scope, setScope] = usePageState('last');
+  const [menuFor, setMenuFor] = usePageState(null);
+  const teams = Array.from(new Set(spaces.map(s => s.team))).filter(Boolean);
+  const filtered = scope === 'last' ? spaces
+    : scope.startsWith('team:') ? spaces.filter(s => s.team === scope.slice(5))
+    : spaces;
   return (
     <>
       <PageHead title="My Spaces" sub="Jump into any of your live or persistent spaces"
         action={<button className="plat-cta"><Icon.plus size={16}/> New space</button>}/>
-      <div className="plat-events-grid">
-        {spaces.map(s => (
-          <div key={s.id} className="plat-card" style={{ display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }} onClick={() => onEnter(s)}>
-            <span style={{ width: 52, height: 52, borderRadius: 14, background: s.accent, color: '#fff', display: 'grid', placeItems: 'center', fontSize: 16, fontWeight: 700, flexShrink: 0 }}>{s.initials}</span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 9 }}>
-                {s.name}
-                {s.live > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: 'rgba(22,163,74,0.12)', padding: '2px 8px', borderRadius: 999 }}>{s.live} live</span>}
-              </div>
-              <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 2 }}>{s.team} · {s.visited}</div>
-            </div>
-            <button className="plat-cta ghost" onClick={(e) => { e.stopPropagation(); onEnter(s); }}><Icon.door size={14}/> Enter</button>
+      <div className="spaces-layout">
+        <aside className="spaces-side">
+          <button className={`spaces-side-item ${scope === 'last' ? 'active' : ''}`} onClick={() => setScope('last')}>
+            <Icon.clock size={16}/> Last visited
+          </button>
+          <button className={`spaces-side-item ${scope === 'demo' ? 'active' : ''}`} onClick={() => setScope('demo')}>
+            <Icon.star size={16}/> Live Demo
+          </button>
+          <div className="spaces-side-label">Your teams</div>
+          {teams.map(t => (
+            <button key={t} className={`spaces-side-item ${scope === `team:${t}` ? 'active' : ''}`} onClick={() => setScope(`team:${t}`)}>
+              <span className="spaces-side-team">{(t.match(/\b\w/g) || []).slice(0, 1).join('').toUpperCase()}</span> {t}
+            </button>
+          ))}
+          <button className="spaces-side-item"><Icon.plus size={16}/> New team</button>
+        </aside>
+        <div className="spaces-main">
+          <div className="spaces-main-title">
+            {scope === 'last' ? 'Last visited' : scope === 'demo' ? 'Live Demo' : scope.slice(5)}
           </div>
-        ))}
+          <div className="spaces-list">
+            {filtered.map(s => (
+              <div key={s.id} className="spaces-row" onClick={() => onEnter(s)}>
+                <span className="spaces-row-avatar" style={{ background: 'var(--bg-elevated)', color: 'var(--text)' }}>{s.initials}</span>
+                <div className="spaces-row-info">
+                  <div className="spaces-row-name">
+                    {s.name}
+                    {s.live > 0 && <span className="spaces-row-live">{s.live} live</span>}
+                  </div>
+                  <div className="spaces-row-sub">{s.team !== 'Demo' ? `In ${s.team} · ` : ''}{s.visited}</div>
+                </div>
+                <div className="spaces-row-menu-wrap" onClick={(e) => e.stopPropagation()}>
+                  <button className="spaces-row-menu" onClick={() => setMenuFor(menuFor === s.id ? null : s.id)}>···</button>
+                  {menuFor === s.id && (
+                    <>
+                      <div className="plat-filter-backdrop" onClick={() => setMenuFor(null)}/>
+                      <div className="plat-filter-menu" style={{ right: 0, left: 'auto', minWidth: 160 }}>
+                        <button className="plat-filter-opt" onClick={() => { setMenuFor(null); onEnter(s); }}><Icon.door size={14}/> Enter</button>
+                        <button className="plat-filter-opt"><Icon.pencil size={14}/> Rename</button>
+                        <button className="plat-filter-opt"><Icon.share size={14}/> Share link</button>
+                        <button className="plat-filter-opt" style={{ color: 'var(--brand-red)' }}><Icon.close size={14}/> Remove</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </>
   );
