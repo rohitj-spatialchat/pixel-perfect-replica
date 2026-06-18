@@ -48,6 +48,9 @@ function initials(name) {
 /* ---------------- Analytics (Event Intelligence) ---------------- */
 function AnalyticsView({ onEnterRoom, initialEvent }) {
   const [eventId, setEventId] = usePageState(initialEvent || null);
+  const [edit, setEdit] = usePageState(false);
+  const [visible, setVisible] = usePageState(['kpis','pulse','attendance','rooms','journey','segments','roster','interaction','recs']);
+  const [gallery, setGallery] = usePageState(false);
   const ev = eventId ? EVENTS_DATA[eventId] : null;
   const S = EidSections;
   const events = Object.values(EVENTS_DATA);
@@ -91,9 +94,6 @@ function AnalyticsView({ onEnterRoom, initialEvent }) {
     { id: 'interaction', name: 'Interaction analysis', desc: 'Action mix + badges', icon: Icon.chat },
     { id: 'recs', name: 'Recommendations', desc: 'Suggested next steps', icon: Icon.megaphone },
   ];
-  const [edit, setEdit] = usePageState(false);
-  const [visible, setVisible] = usePageState(['kpis','pulse','attendance','rooms','journey','segments','roster','interaction','recs']);
-  const [gallery, setGallery] = usePageState(false);
   const removeW = (id) => setVisible(v => v.filter(x => x !== id));
   const addW = (id) => { setVisible(v => v.includes(id) ? v : [...v, id]); setGallery(false); };
   const WIDGET = (id) => {
