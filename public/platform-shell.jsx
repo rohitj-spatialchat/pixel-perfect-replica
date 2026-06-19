@@ -175,6 +175,249 @@ function DonutLegend({ segments, center, valueKey }) {
 
 function HomePage({ onEnterRoom, onNav, onCreateEvent }) {
   const h = PLATFORM.home;
+  const STORAGE_KEY = 'sc-home-widgets-v1';
+
+  const WIDGET_CATALOG = {
+    'reg-timeline': {
+      label: 'Registrations timeline',
+      desc: 'Daily new vs cumulative total',
+      defaultTitle: 'Registrations timeline',
+      defaultSub: 'New (bars) vs. cumulative total (line)',
+      span: 1,
+      group: 'charts',
+    },
+    'weekly-reg': {
+      label: 'Weekly registrations',
+      desc: 'New registrations per week',
+      defaultTitle: 'Weekly registrations',
+      defaultSub: 'New registrations per week',
+      span: 1,
+      group: 'charts',
+    },
+    'stat-trio': {
+      label: 'Registration summary',
+      desc: 'Registrants, first-time & returning',
+      defaultTitle: 'Registration summary',
+      defaultSub: 'Headline registration counts',
+      span: 2,
+      group: 'metrics',
+    },
+    'revenue-ticket': {
+      label: 'Revenue by ticket',
+      desc: 'Breakdown across ticket tiers',
+      defaultTitle: 'Revenue by ticket',
+      defaultSub: 'Across all ticket tiers',
+      span: 1,
+      group: 'charts',
+    },
+    'reg-ticket': {
+      label: 'Registrations by ticket',
+      desc: 'Distribution by ticket type',
+      defaultTitle: 'Registrations by ticket',
+      defaultSub: `Distribution of ${h.regTotal} registrations`,
+      span: 1,
+      group: 'charts',
+    },
+    'event-performance': {
+      label: 'Event performance',
+      desc: 'Exploration rate by event',
+      defaultTitle: 'Event Performance',
+      defaultSub: 'Exploration rate by event',
+      span: 1,
+      group: 'lists',
+    },
+    'recent-activity': {
+      label: 'Recent activity',
+      desc: 'Highlights from your events',
+      defaultTitle: 'Recent Activity',
+      defaultSub: 'Highlights from your events',
+      span: 1,
+      group: 'lists',
+    },
+  };
+
+  const DEFAULT_LAYOUT = [
+    { id: 'reg-timeline', visible: true, span: 1 },
+    { id: 'weekly-reg', visible: true, span: 1 },
+    { id: 'stat-trio', visible: true, span: 2 },
+    { id: 'revenue-ticket', visible: true, span: 1 },
+    { id: 'reg-ticket', visible: true, span: 1 },
+    { id: 'event-performance', visible: true, span: 1 },
+    { id: 'recent-activity', visible: true, span: 1 },
+  ];
+
+  const loadLayout = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return DEFAULT_LAYOUT;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return DEFAULT_LAYOUT;
+      const known = new Set(Object.keys(WIDGET_CATALOG));
+      const cleaned = parsed.filter(w => known.has(w.id)).map(w => ({
+        id: w.id,
+        visible: w.visible !== false,
+        span: w.span === 2 ? 2 : 1,
+        title: w.title || '',
+        sub: w.sub || '',
+      }));
+      DEFAULT_LAYOUT.forEach(def => {
+        if (!cleaned.some(w => w.id === def.id)) cleaned.push({ ...def });
+      });
+      return cleaned;
+    } catch { return DEFAULT_LAYOUT; }
+  };
+
+  const [layout, setLayout] = useShellState(loadLayout);
+  const [editing, setEditing] = useShellState(false);
+  const [addOpen, setAddOpen] = useShellState(false);
+  const [settingsId, setSettingsId] = useShellState(null);
+
+  const persist = (next) => {
+    setLayout(next);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  };
+
+  const visibleWidgets = layout.filter(w => w.visible);
+  const hiddenWidgets = layout.filter(w => !w.visible);
+
+  const meta = (id) => WIDGET_CATALOG[id] || {};
+  const titleOf = (w) => w.title || meta(w.id).defaultTitle || w.id;
+  const subOf = (w) => w.sub || meta(w.id).defaultSub || '';
+
+  const updateWidget = (id, patch) => persist(layout.map(w => w.id === id ? { ...w, ...patch } : w));
+  const removeWidget = (id) => updateWidget(id, { visible: false });
+  const addWidget = (id) => updateWidget(id, { visible: true });
+  const moveWidget = (id, dir) => {
+    const vis = layout.filter(w => w.visible);
+    const idx = vis.findIndex(w => w.id === id);
+    if (idx < 0) return;
+    const swap = dir === 'up' ? idx - 1 : idx + 1;
+    if (swap < 0 || swap >= vis.length) return;
+    const order = vis.map(w => w.id);
+    [order[idx], order[swap]] = [order[swap], order[idx]];
+    const hidden = layout.filter(w => !w.visible);
+    const reordered = order.map(oid => layout.find(w => w.id === oid)).concat(hidden);
+    persist(reordered);
+  };
+
+  const resetLayout = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setLayout(DEFAULT_LAYOUT.map(w => ({ ...w })));
+    setSettingsId(null);
+    setAddOpen(false);
+  };
+
+  const renderWidgetBody = (w) => {
+    switch (w.id) {
+      case 'reg-timeline':
+        return (
+          <>
+            <div className="plat-card-head">
+              <div>
+                <div className="plat-card-title">{titleOf(w)}</div>
+                <div className="plat-card-sub">{subOf(w)}</div>
+              </div>
+              {!editing && <span className="plat-card-link" onClick={() => onNav('analytics')}>View Details <Icon.expand size={12}/></span>}
+            </div>
+            <ComboChart data={h.regTimeline}/>
+          </>
+        );
+      case 'weekly-reg':
+        return (
+          <>
+            <div className="plat-card-head">
+              <div>
+                <div className="plat-card-title">{titleOf(w)}</div>
+                <div className="plat-card-sub">{subOf(w)}</div>
+              </div>
+            </div>
+            <LineChart data={h.weeklyReg} valKey="v" labelKey="w"/>
+          </>
+        );
+      case 'stat-trio':
+        return (
+          <div className="home-stat-trio-inner">
+            {(editing || !w.title) && (
+              <div className="home-widget-section-label">
+                <div className="plat-card-title">{titleOf(w)}</div>
+                {subOf(w) && <div className="plat-card-sub">{subOf(w)}</div>}
+              </div>
+            )}
+            <div className="plat-trio" style={{ marginBottom: 0 }}>
+              {h.statTrio.map(s => (
+                <div key={s.label} className="plat-stat-big">
+                  <div className="plat-stat-big-label">{s.label}</div>
+                  <div className="plat-stat-big-val">{s.value.toLocaleString()}</div>
+                  <div className="plat-stat-big-sub">{s.sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 'revenue-ticket':
+        return (
+          <>
+            <div className="plat-card-head">
+              <div>
+                <div className="plat-card-title">{titleOf(w)}</div>
+                <div className="plat-card-sub">{subOf(w)}</div>
+              </div>
+              {!editing && <span className="plat-card-link" onClick={() => onNav('revenue')}>Revenue <Icon.expand size={12}/></span>}
+            </div>
+            <DonutLegend segments={h.revenueByTicket} center={h.revenueTotal} valueKey="amt"/>
+          </>
+        );
+      case 'reg-ticket':
+        return (
+          <>
+            <div className="plat-card-head">
+              <div>
+                <div className="plat-card-title">{titleOf(w)}</div>
+                <div className="plat-card-sub">{subOf(w)}</div>
+              </div>
+            </div>
+            <DonutLegend segments={h.regByTicket} center={h.regTotal} valueKey="cnt"/>
+          </>
+        );
+      case 'event-performance':
+        return (
+          <>
+            <div className="plat-card-head" style={{ marginBottom: 2 }}>
+              <div>
+                <div className="plat-card-title">{titleOf(w)}</div>
+                <div className="plat-card-sub">{subOf(w)}</div>
+              </div>
+              {!editing && <span className="plat-card-link" onClick={() => onNav('analytics')}>All Analytics <Icon.expand size={12}/></span>}
+            </div>
+            {h.performance.map(p => (
+              <div key={p.name} className="plat-perf-row">
+                <span className="plat-perf-name">{p.name}</span>
+                <span className="plat-perf-track"><span className="plat-perf-fill" style={{ width: `${p.pct}%` }}/></span>
+                <span className="plat-perf-pct">{p.pct}%</span>
+              </div>
+            ))}
+          </>
+        );
+      case 'recent-activity':
+        return (
+          <>
+            <div className="plat-card-title" style={{ marginBottom: 2 }}>{titleOf(w)}</div>
+            <div className="plat-card-sub" style={{ marginBottom: 6 }}>{subOf(w)}</div>
+            {h.activity.map((a, i) => (
+              <div key={i} className="plat-act-row">
+                <span className="plat-act-dot" style={{ background: a.tint }}/>
+                <span className="plat-act-text"><b>{a.who}</b> {a.act}</span>
+                <span className="plat-act-when">{a.when}</span>
+              </div>
+            ))}
+          </>
+        );
+      default: return null;
+    }
+  };
+
+  const settingsWidget = settingsId ? layout.find(w => w.id === settingsId) : null;
+
   return (
     <>
       <div className="plat-page-head">
@@ -182,10 +425,50 @@ function HomePage({ onEnterRoom, onNav, onCreateEvent }) {
           <h1 className="plat-page-title">Welcome back, Arty</h1>
           <div className="plat-page-sub">Twilight City · 2 events · updated 4 minutes ago</div>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button className="plat-cta" onClick={onCreateEvent}><Icon.plus size={16}/> Create Event</button>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          {editing ? (
+            <>
+              <button className="home-dash-btn" onClick={() => setAddOpen(o => !o)}><Icon.plus size={14}/> Add widget</button>
+              <button className="home-dash-btn" onClick={resetLayout}>Reset</button>
+              <button className="plat-cta" onClick={() => { setEditing(false); setAddOpen(false); setSettingsId(null); }}>Done</button>
+            </>
+          ) : (
+            <>
+              <button className="home-dash-btn" onClick={() => setEditing(true)}><Icon.pencil size={14}/> Customize dashboard</button>
+              <button className="plat-cta" onClick={onCreateEvent}><Icon.plus size={16}/> Create Event</button>
+            </>
+          )}
         </div>
       </div>
+
+      {editing && (
+        <div className="home-edit-banner">
+          <Icon.settings size={15}/>
+          <span>Drag-free customize: reorder widgets, change size, edit titles, or hide widgets. Layout saves automatically.</span>
+        </div>
+      )}
+
+      {editing && addOpen && (
+        <div className="home-add-panel">
+          <div className="home-add-head">
+            <span>Add widgets to your dashboard</span>
+            <button className="home-add-close" onClick={() => setAddOpen(false)}><Icon.close size={14}/></button>
+          </div>
+          <div className="home-add-grid">
+            {hiddenWidgets.length === 0 && <div className="home-add-empty">All widgets are already on your dashboard.</div>}
+            {hiddenWidgets.map(w => {
+              const m = meta(w.id);
+              return (
+                <button key={w.id} className="home-add-item" onClick={() => addWidget(w.id)}>
+                  <span className="home-add-item-name">{m.label}</span>
+                  <span className="home-add-item-desc">{m.desc}</span>
+                  <span className="home-add-item-action"><Icon.plus size={14}/> Add</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="plat-banner">
         <span className="plat-banner-emoji">🚀</span>
@@ -196,93 +479,62 @@ function HomePage({ onEnterRoom, onNav, onCreateEvent }) {
         <button className="plat-banner-btn" onClick={onEnterRoom}>Go to My Space <Icon.caretRight size={14}/></button>
       </div>
 
-      {/* Charts row — registrations timeline + weekly */}
-      <div className="plat-charts">
-        <div className="plat-card">
-          <div className="plat-card-head">
-            <div>
-              <div className="plat-card-title">Registrations timeline</div>
-              <div className="plat-card-sub">New (bars) vs. cumulative total (line)</div>
+      <div className={`home-widgets ${editing ? 'editing' : ''}`}>
+        {visibleWidgets.map((w, i) => (
+          <div
+            key={w.id}
+            className={`home-widget ${w.span === 2 ? 'span-2' : 'span-1'} ${w.id === 'stat-trio' ? 'is-trio' : ''}`}
+            data-widget={w.id}
+          >
+            {editing && (
+              <div className="home-widget-toolbar">
+                <span className="home-widget-drag-label"><Icon.grid size={13}/> {meta(w.id).label}</span>
+                <div className="home-widget-actions">
+                  <button title="Move up" disabled={i === 0} onClick={() => moveWidget(w.id, 'up')}><Icon.caretDown size={14} style={{ transform: 'rotate(180deg)' }}/></button>
+                  <button title="Move down" disabled={i === visibleWidgets.length - 1} onClick={() => moveWidget(w.id, 'down')}><Icon.caretDown size={14}/></button>
+                  <button title="Widget settings" className={settingsId === w.id ? 'active' : ''} onClick={() => setSettingsId(settingsId === w.id ? null : w.id)}><Icon.settings size={14}/></button>
+                  <button title="Remove widget" onClick={() => removeWidget(w.id)}><Icon.close size={14}/></button>
+                </div>
+              </div>
+            )}
+            {editing && settingsId === w.id && (
+              <div className="home-widget-settings">
+                <label>
+                  <span>Title</span>
+                  <input value={w.title ?? ''} placeholder={meta(w.id).defaultTitle}
+                    onChange={e => updateWidget(w.id, { title: e.target.value })}/>
+                </label>
+                <label>
+                  <span>Subtitle</span>
+                  <input value={w.sub ?? ''} placeholder={meta(w.id).defaultSub}
+                    onChange={e => updateWidget(w.id, { sub: e.target.value })}/>
+                </label>
+                {w.id !== 'stat-trio' && (
+                  <label>
+                    <span>Width</span>
+                    <div className="home-width-pills">
+                      <button className={w.span === 1 ? 'active' : ''} onClick={() => updateWidget(w.id, { span: 1 })}>Half</button>
+                      <button className={w.span === 2 ? 'active' : ''} onClick={() => updateWidget(w.id, { span: 2 })}>Full</button>
+                    </div>
+                  </label>
+                )}
+              </div>
+            )}
+            <div className={`plat-card home-widget-card ${w.id === 'stat-trio' ? 'home-trio-card' : ''}`}>
+              {renderWidgetBody(w)}
             </div>
-            <span className="plat-card-link" onClick={() => onNav('analytics')}>View Details <Icon.expand size={12}/></span>
-          </div>
-          <ComboChart data={h.regTimeline}/>
-        </div>
-        <div className="plat-card">
-          <div className="plat-card-head">
-            <div>
-              <div className="plat-card-title">Weekly registrations</div>
-              <div className="plat-card-sub">New registrations per week</div>
-            </div>
-          </div>
-          <LineChart data={h.weeklyReg} valKey="v" labelKey="w"/>
-        </div>
-      </div>
-
-      {/* Big stat trio */}
-      <div className="plat-trio">
-        {h.statTrio.map(s => (
-          <div key={s.label} className="plat-stat-big">
-            <div className="plat-stat-big-label">{s.label}</div>
-            <div className="plat-stat-big-val">{s.value.toLocaleString()}</div>
-            <div className="plat-stat-big-sub">{s.sub}</div>
           </div>
         ))}
       </div>
 
-      {/* Revenue + registrations by ticket */}
-      <div className="plat-charts">
-        <div className="plat-card">
-          <div className="plat-card-head">
-            <div>
-              <div className="plat-card-title">Revenue by ticket</div>
-              <div className="plat-card-sub">Across all ticket tiers</div>
-            </div>
-            <span className="plat-card-link" onClick={() => onNav('revenue')}>Revenue <Icon.expand size={12}/></span>
-          </div>
-          <DonutLegend segments={h.revenueByTicket} center={h.revenueTotal} valueKey="amt"/>
+      {editing && visibleWidgets.length === 0 && (
+        <div className="home-empty-dash">
+          <div className="plat-empty-ico"><Icon.chart size={24}/></div>
+          <div className="plat-empty-title">No widgets on your dashboard</div>
+          <div className="plat-empty-text">Add analytics widgets to build a view that works for your team.</div>
+          <button className="plat-cta" onClick={() => setAddOpen(true)}><Icon.plus size={14}/> Add widget</button>
         </div>
-        <div className="plat-card">
-          <div className="plat-card-head">
-            <div>
-              <div className="plat-card-title">Registrations by ticket</div>
-              <div className="plat-card-sub">Distribution of {h.regTotal} registrations</div>
-            </div>
-          </div>
-          <DonutLegend segments={h.regByTicket} center={h.regTotal} valueKey="cnt"/>
-        </div>
-      </div>
-
-      {/* Event performance + activity */}
-      <div className="plat-bottom">
-        <div className="plat-card">
-          <div className="plat-card-head" style={{ marginBottom: 2 }}>
-            <div>
-              <div className="plat-card-title">Event Performance</div>
-              <div className="plat-card-sub">Exploration rate by event</div>
-            </div>
-            <span className="plat-card-link" onClick={() => onNav('analytics')}>All Analytics <Icon.expand size={12}/></span>
-          </div>
-          {h.performance.map(p => (
-            <div key={p.name} className="plat-perf-row">
-              <span className="plat-perf-name">{p.name}</span>
-              <span className="plat-perf-track"><span className="plat-perf-fill" style={{ width: `${p.pct}%` }}/></span>
-              <span className="plat-perf-pct">{p.pct}%</span>
-            </div>
-          ))}
-        </div>
-        <div className="plat-card">
-          <div className="plat-card-title" style={{ marginBottom: 2 }}>Recent Activity</div>
-          <div className="plat-card-sub" style={{ marginBottom: 6 }}>Highlights from your events</div>
-          {h.activity.map((a, i) => (
-            <div key={i} className="plat-act-row">
-              <span className="plat-act-dot" style={{ background: a.tint }}/>
-              <span className="plat-act-text"><b>{a.who}</b> {a.act}</span>
-              <span className="plat-act-when">{a.when}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
     </>
   );
 }
@@ -386,7 +638,7 @@ function PlatformDashboard({ onEnterRoom, theme, onToggleTheme }) {
             : (
               <button key={item.id} className={`plat-nav-item ${page === item.id ? 'active' : ''}`}
                 onClick={() => !item.soon && go(item.id)} title={item.label}>
-                <span className="plat-nav-ico"><item.icon size={17}/></span>
+                <span className="plat-nav-ico"><item.icon size={16}/></span>
                 <span className="plat-nav-label">{item.label}</span>
                 {item.soon && <span className="plat-nav-soon">SOON</span>}
               </button>
