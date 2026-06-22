@@ -406,6 +406,7 @@ function CreateEventModal({ onClose, onToast, inline, eventType }) {
           ticketType={ticketType} setTicketType={setTicketType}
           inviteInput={inviteInput} setInviteInput={setInviteInput}
           invitees={invitees} addInvitees={addInvitees} removeInvitee={removeInvitee}
+          fileInputRef={fileInputRef} onImportClick={onImportClick} onImportFile={onImportFile}
           onNext={() => setView('registration')}
         />}
         {view === 'builder' && <BuilderView onToast={onToast}/>}
