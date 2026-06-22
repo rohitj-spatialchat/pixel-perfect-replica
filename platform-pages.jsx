@@ -49,7 +49,7 @@ function initials(name) {
 function AnalyticsView({ onEnterRoom, initialEvent }) {
   const [eventId, setEventId] = usePageState(initialEvent || null);
   const [edit, setEdit] = usePageState(false);
-  const [visible, setVisible] = usePageState(['kpis','pulse','attendance','rooms','journey','segments','roster','interaction','recs']);
+  const [visible, setVisible] = usePageState(['kpis','pulse','attendance','rooms','journey','segments','roster','interaction','recs','crm','webhooks','replay','attribution','accounts']);
   const [gallery, setGallery] = usePageState(false);
   const ev = eventId ? EVENTS_DATA[eventId] : null;
   const S = EidSections;
