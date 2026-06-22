@@ -448,7 +448,8 @@ function DetailsView({
   date, setDate, time, setTime, timezone, setTimezone,
   capacity, setCapacity, type, setType,
   requireApproval, setRequireApproval, ticketType, setTicketType,
-  inviteInput, setInviteInput, invitees, addInvitees, removeInvitee, onNext
+  inviteInput, setInviteInput, invitees, addInvitees, removeInvitee,
+  fileInputRef, onImportClick, onImportFile, onNext
 }) {
   return (
     <div className="ev-details">
