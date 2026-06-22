@@ -190,6 +190,32 @@ function CreateEventModal({ onClose, onToast, inline, eventType }) {
     onToast(`${valid.length} invitee${valid.length === 1 ? '' : 's'} added`);
   };
   const removeInvitee = (e) => setInvitees(list => list.filter(x => x !== e));
+  const fileInputRef = React.useRef(null);
+  const onImportClick = () => fileInputRef.current && fileInputRef.current.click();
+  const onImportFile = async (ev) => {
+    const files = Array.from(ev.target.files || []);
+    if (!files.length) return;
+    let added = 0, skipped = 0;
+    const collected = [];
+    for (const f of files) {
+      try {
+        const text = await f.text();
+        const parts = text.split(/[\s,;\r\n\t"']+/).map(s => s.trim()).filter(Boolean);
+        for (const p of parts) {
+          if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p)) collected.push(p.toLowerCase());
+          else if (p.includes('@')) skipped++;
+        }
+      } catch { /* ignore */ }
+    }
+    if (!collected.length) { onToast('No valid emails found in file'); ev.target.value = ''; return; }
+    setInvitees(list => {
+      const set = new Set(list);
+      collected.forEach(e => { if (!set.has(e)) { set.add(e); added++; } });
+      return Array.from(set);
+    });
+    onToast(`Imported ${added} email${added === 1 ? '' : 's'}${skipped ? ` · ${skipped} skipped` : ''}`);
+    ev.target.value = '';
+  };
 
 
   const [regFields, setRegFields] = useModalState([
