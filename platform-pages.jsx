@@ -93,10 +93,16 @@ function AnalyticsView({ onEnterRoom, initialEvent }) {
     { id: 'roster', name: 'Top attendees', desc: 'Ranked roster', icon: Icon.users },
     { id: 'interaction', name: 'Interaction analysis', desc: 'Action mix + badges', icon: Icon.chat },
     { id: 'recs', name: 'Recommendations', desc: 'Suggested next steps', icon: Icon.megaphone },
+    { id: 'crm', name: 'CRM sync', desc: 'Records pushed to HubSpot/Salesforce/Zapier', icon: Icon.share },
+    { id: 'webhooks', name: 'Webhook activity', desc: 'Outgoing webhook deliveries', icon: Icon.code },
+    { id: 'replay', name: 'Replay hub', desc: 'On-demand views & watch time', icon: Icon.video },
+    { id: 'attribution', name: 'Source attribution', desc: 'UTM + referrer rollup', icon: Icon.globe },
+    { id: 'accounts', name: 'Account-based (ABM)', desc: 'Top companies & deals', icon: Icon.users },
   ];
   const removeW = (id) => setVisible(v => v.filter(x => x !== id));
   const addW = (id) => { setVisible(v => v.includes(id) ? v : [...v, id]); setGallery(false); };
   const WIDGET = (id) => {
+    const EX = window.EventExtras || {};
     switch (id) {
       case 'kpis': return <S.KpiStrip k={ev.kpis}/>;
       case 'pulse': return <EngagementPulse ev={ev}/>;
@@ -107,6 +113,11 @@ function AnalyticsView({ onEnterRoom, initialEvent }) {
       case 'roster': return <S.RosterSection ev={ev}/>;
       case 'interaction': return <S.InteractionSection ev={ev}/>;
       case 'recs': return <S.RecommendationsSection ev={ev}/>;
+      case 'crm': return EX.CRMSyncWidget ? <EX.CRMSyncWidget ev={ev}/> : null;
+      case 'webhooks': return EX.WebhookFeedWidget ? <EX.WebhookFeedWidget ev={ev}/> : null;
+      case 'replay': return EX.ReplayHubWidget ? <EX.ReplayHubWidget ev={ev}/> : null;
+      case 'attribution': return EX.AttributionWidget ? <EX.AttributionWidget ev={ev}/> : null;
+      case 'accounts': return EX.AccountsWidget ? <EX.AccountsWidget ev={ev}/> : null;
       default: return null;
     }
   };
