@@ -198,6 +198,16 @@
   background: var(--bg-elevated); border: 1px solid var(--border);
   border-radius: var(--radius-xl); padding: 10px 14px; flex-shrink: 0;
   box-shadow: var(--shadow-sm);
+  overflow-x: auto; overflow-y: visible;
+  scrollbar-width: none; max-width: 100%;
+}
+.stage-controls::-webkit-scrollbar { display: none; }
+.stage-controls > * { flex-shrink: 0; }
+@media (max-width: 1100px) {
+  .stage-cbtn { min-width: 46px; font-size: 10px; padding: 5px 6px; }
+  .stage-raise { padding: 8px 12px; font-size: 12px; }
+  .stage-record { padding: 7px 11px; font-size: 12px; }
+  .stage-controls { gap: 6px; padding: 8px 10px; }
 }
 .stage-live {
   display: inline-flex; align-items: center; gap: 7px;
@@ -451,3 +461,108 @@
 .sc-font { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-lg); font-size: 14px; color: var(--text); }
 .sc-font.sel { border-color: var(--brand-indigo); color: var(--brand-indigo); background: rgba(91,91,245,0.06); }
 @media (max-width: 700px) { .dest-platforms { grid-template-columns: repeat(3, 1fr); } }
+
+/* ============================================================
+   Guided Tour — "Glass immersive spotlight"
+   ============================================================ */
+.tour-root {
+  position: fixed; inset: 0; z-index: 100;
+  pointer-events: none;
+  animation: tourFade 280ms ease-out;
+}
+@keyframes tourFade { from { opacity: 0; } }
+.tour-svg { position: absolute; inset: 0; pointer-events: auto; }
+.tour-ring {
+  position: absolute; pointer-events: none;
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 2px rgba(91,91,245,0.85),
+    0 0 0 8px rgba(91,91,245,0.18),
+    0 0 60px rgba(91,91,245,0.45);
+  transition: all 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: tourRingPulse 2.4s ease-in-out infinite;
+}
+@keyframes tourRingPulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(91,91,245,0.85), 0 0 0 8px rgba(91,91,245,0.18), 0 0 60px rgba(91,91,245,0.45); }
+  50%      { box-shadow: 0 0 0 2px rgba(91,91,245,0.9),  0 0 0 14px rgba(91,91,245,0.08), 0 0 80px rgba(91,91,245,0.6); }
+}
+
+.tour-card {
+  position: absolute; width: 380px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 24px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 32px 64px -16px rgba(8,10,22,0.45), 0 2px 6px rgba(8,10,22,0.18);
+  pointer-events: auto;
+  transition: left 480ms cubic-bezier(0.22, 1, 0.36, 1), top 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: tourCardIn 360ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+[data-theme="dark"] .tour-card {
+  background: rgba(31, 31, 35, 0.92);
+  border-color: rgba(255,255,255,0.08);
+}
+@keyframes tourCardIn { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+
+.tour-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.tour-card-step { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brand-indigo); }
+.tour-card-bar { display: inline-block; width: 28px; height: 4px; border-radius: 999px; background: var(--brand-indigo); }
+.tour-card-close { width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; color: var(--text-tertiary); }
+.tour-card-close:hover { background: var(--surface); color: var(--text); }
+.tour-card-eyebrow { font-size: 11px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 6px; }
+.tour-card-title { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); margin: 0 0 8px; line-height: 1.25; }
+.tour-card-body { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; margin: 0 0 18px; }
+.tour-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.tour-skip { font-size: 13px; font-weight: 500; color: var(--text-tertiary); padding: 8px 4px; }
+.tour-skip:hover { color: var(--text); }
+.tour-card-actions { display: flex; align-items: center; gap: 10px; }
+.tour-back {
+  width: 38px; height: 38px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--bg-elevated);
+  color: var(--text-secondary); display: grid; place-items: center;
+  transition: all 120ms ease-out;
+}
+.tour-back:hover:not(:disabled) { background: var(--surface); color: var(--text); }
+.tour-back:disabled { opacity: 0.4; cursor: not-allowed; }
+.tour-next {
+  padding: 10px 22px; border-radius: 999px;
+  background: var(--brand-indigo); color: #fff;
+  font-size: 13.5px; font-weight: 600;
+  box-shadow: 0 8px 20px -6px rgba(91,91,245,0.55);
+  transition: transform 120ms ease-out, background 120ms ease-out;
+}
+.tour-next:hover { background: var(--brand-indigo-hover); }
+.tour-next:active { transform: scale(0.96); }
+.tour-dots { display: flex; justify-content: center; gap: 6px; margin-top: 16px; }
+.tour-dot { width: 6px; height: 6px; border-radius: 999px; background: var(--border-strong); transition: all 240ms ease-out; }
+.tour-dot.done { background: rgba(91,91,245,0.5); }
+.tour-dot.active { width: 18px; background: var(--brand-indigo); }
+
+/* Tour launcher button */
+.tour-launcher {
+  position: fixed; bottom: 22px; left: 22px; z-index: 50;
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 10px 16px; border-radius: 999px;
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  color: var(--text); font-size: 13px; font-weight: 600;
+  box-shadow: 0 8px 20px -6px rgba(8,10,22,0.18);
+  cursor: pointer; transition: transform 120ms ease-out;
+}
+.tour-launcher:hover { transform: translateY(-2px); }
+.tour-launcher-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--brand-indigo); box-shadow: 0 0 0 4px rgba(91,91,245,0.18); }
+.tour-role-pop {
+  position: absolute; bottom: calc(100% + 8px); left: 0;
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: 14px; padding: 6px; min-width: 220px;
+  box-shadow: var(--shadow-lg);
+  animation: stagePopIn 180ms var(--ease-out) backwards;
+}
+.tour-role-pop button {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 10px 12px; border-radius: 10px; text-align: left;
+  font-size: 13px; color: var(--text);
+}
+.tour-role-pop button:hover { background: var(--surface); }
+.tour-role-pop button b { font-weight: 600; }
+.tour-role-pop button span { display: block; font-size: 11.5px; color: var(--text-tertiary); }
