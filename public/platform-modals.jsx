@@ -546,12 +546,14 @@ function DetailsView({
 
         <div className="ev-section">
           <div className="ev-section-title">Invite attendees</div>
-          <div className="ev-help" style={{ marginBottom: 10 }}>Add emails to trigger invitation emails with event details and join link as soon as you publish.</div>
+          <div className="ev-help" style={{ marginBottom: 10 }}>Add emails individually or import a CSV/TXT file to trigger invitation emails with the event landing page link as soon as you publish.</div>
           <div className="ev-invite-row">
             <input className="ev-input" value={inviteInput} onChange={e => setInviteInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addInvitees(); } }}
               placeholder="alex@acme.com, sam@startup.io"/>
+            <button className="plat-cta ghost" onClick={onImportClick} type="button" title="Import emails from a CSV or text file"><Icon.upload size={14}/> Import</button>
             <button className="plat-cta" onClick={addInvitees} type="button"><Icon.plus size={14}/> Add</button>
+            <input ref={fileInputRef} type="file" accept=".csv,.txt,.tsv,text/csv,text/plain" multiple style={{ display: 'none' }} onChange={onImportFile}/>
           </div>
           {invitees.length > 0 && (
             <div className="ev-invitees">
