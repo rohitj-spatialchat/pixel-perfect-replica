@@ -301,7 +301,14 @@ function CreateEventModal({ onClose, onToast, inline, eventType }) {
           <div className="fb-top-tabs">
             <button className={`fb-tab ${view === 'details' ? 'active' : ''}`} onClick={() => setView('details')}>Event details</button>
             <button className={`fb-tab ${view === 'registration' ? 'active' : ''}`} onClick={() => setView('registration')}>Registration</button>
+            <button className={`fb-tab ${view === 'tickets' ? 'active' : ''}`} onClick={() => setView('tickets')}>Tickets</button>
+            <button className={`fb-tab ${view === 'agenda' ? 'active' : ''}`} onClick={() => setView('agenda')}>Agenda</button>
+            <button className={`fb-tab ${view === 'emails' ? 'active' : ''}`} onClick={() => setView('emails')}>Emails</button>
+            <button className={`fb-tab ${view === 'engagement' ? 'active' : ''}`} onClick={() => setView('engagement')}>Engagement</button>
+            <button className={`fb-tab ${view === 'streaming' ? 'active' : ''}`} onClick={() => setView('streaming')}>Streaming</button>
+            <button className={`fb-tab ${view === 'integrations' ? 'active' : ''}`} onClick={() => setView('integrations')}>Integrations</button>
             <button className={`fb-tab ${view === 'builder' ? 'active' : ''}`} onClick={() => setView('builder')}>Landing page</button>
+            <button className={`fb-tab ${view === 'mobile' ? 'active' : ''}`} onClick={() => setView('mobile')}>Mobile &amp; embed</button>
             <button className={`fb-tab ${view === 'branding' ? 'active' : ''}`} onClick={() => setView('branding')}>Branding &amp; CSS</button>
           </div>
           <div className="fb-top-right">
@@ -411,6 +418,13 @@ function CreateEventModal({ onClose, onToast, inline, eventType }) {
         />}
         {view === 'builder' && <BuilderView onToast={onToast}/>}
         {view === 'branding' && <BrandingView css={css} setCss={setCss} onToast={onToast}/>}
+        {view === 'tickets' && window.EventExtras && <window.EventExtras.TicketsView onToast={onToast}/>}
+        {view === 'agenda' && window.EventExtras && <window.EventExtras.AgendaView onToast={onToast}/>}
+        {view === 'emails' && window.EventExtras && <window.EventExtras.EmailsView onToast={onToast}/>}
+        {view === 'engagement' && window.EventExtras && <window.EventExtras.EngagementView onToast={onToast}/>}
+        {view === 'streaming' && window.EventExtras && <window.EventExtras.StreamingView onToast={onToast}/>}
+        {view === 'integrations' && window.EventExtras && <window.EventExtras.IntegrationsTabView onToast={onToast}/>}
+        {view === 'mobile' && window.EventExtras && <window.EventExtras.MobileEmbedView onToast={onToast} eventName={eventName}/>}
 
       </div>
     </div>
