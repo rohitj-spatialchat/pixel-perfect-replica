@@ -273,14 +273,20 @@ function CreateEventModal({ onClose, onToast, inline, eventType }) {
             <span className="fb-draft">Draft</span>
           </div>
           <div className="fb-top-tabs">
+            <button className={`fb-tab ${view === 'details' ? 'active' : ''}`} onClick={() => setView('details')}>Event details</button>
             <button className={`fb-tab ${view === 'registration' ? 'active' : ''}`} onClick={() => setView('registration')}>Registration</button>
             <button className={`fb-tab ${view === 'builder' ? 'active' : ''}`} onClick={() => setView('builder')}>Landing page</button>
             <button className={`fb-tab ${view === 'branding' ? 'active' : ''}`} onClick={() => setView('branding')}>Branding &amp; CSS</button>
           </div>
           <div className="fb-top-right">
             <button className="fb-ghost-btn" onClick={() => onToast('Running test flow…')}><Icon.caretRight size={14}/> Test flow</button>
-            <button className="fb-publish" onClick={() => { setPublished(true); onToast('Event published'); }}><Icon.send size={14}/> Publish</button>
+            <button className="fb-publish" onClick={() => {
+              setPublished(true);
+              if (invitees.length) onToast(`Event published · invites sent to ${invitees.length} attendee${invitees.length === 1 ? '' : 's'}`);
+              else onToast('Event published');
+            }}><Icon.send size={14}/> Publish</button>
           </div>
+
         </div>
 
         {/* Canvas */}
