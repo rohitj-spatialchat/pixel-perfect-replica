@@ -367,8 +367,24 @@ function CreateEventModal({ onClose, onToast, inline, eventType }) {
           </div>
         </div>}
 
+        {view === 'details' && <DetailsView
+          name={eventName} setName={setEventName}
+          location={evLocation} setLocation={setEvLocation}
+          description={evDescription} setDescription={setEvDescription}
+          date={evDate} setDate={setEvDate}
+          time={evTime} setTime={setEvTime}
+          timezone={evTimezone} setTimezone={setEvTimezone}
+          capacity={evCapacity} setCapacity={setEvCapacity}
+          type={evType} setType={setEvType}
+          requireApproval={requireApproval} setRequireApproval={setRequireApproval}
+          ticketType={ticketType} setTicketType={setTicketType}
+          inviteInput={inviteInput} setInviteInput={setInviteInput}
+          invitees={invitees} addInvitees={addInvitees} removeInvitee={removeInvitee}
+          onNext={() => setView('registration')}
+        />}
         {view === 'builder' && <BuilderView onToast={onToast}/>}
         {view === 'branding' && <BrandingView css={css} setCss={setCss} onToast={onToast}/>}
+
       </div>
     </div>
   );
