@@ -158,12 +158,65 @@ const TEMPLATES = [
 let _fid = 100;
 const nid = () => ++_fid;
 
-function CreateEventModal({ onClose, onToast, inline }) {
+function CreateEventModal({ onClose, onToast, inline, eventType }) {
   const [eventName, setEventName] = useModalState('Untitled event');
   const [sel, setSel] = useModalState('reg');
   const [published, setPublished] = useModalState(false);
-  const [view, setView] = useModalState(inline ? 'builder' : 'registration');
+  const [view, setView] = useModalState('details');
   const [css, setCss] = useModalState('');
+
+  // Event details
+  const [evLocation, setEvLocation] = useModalState('SpatialChat (online)');
+  const [evDescription, setEvDescription] = useModalState('Join us for an interactive session with live speakers, breakout rooms and networking.');
+  const [evDate, setEvDate] = useModalState(() => {
+    const d = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    return d.toISOString().slice(0, 10);
+  });
+  const [evTime, setEvTime] = useModalState('17:00');
+  const [evTimezone, setEvTimezone] = useModalState('UTC');
+  const [evCapacity, setEvCapacity] = useModalState('250');
+  const [evType, setEvType] = useModalState(eventType === 'webinar' ? 'webinar' : 'virtual');
+  const [requireApproval, setRequireApproval] = useModalState(false);
+  const [ticketType, setTicketType] = useModalState('free');
+  const [inviteInput, setInviteInput] = useModalState('');
+  const [invitees, setInvitees] = useModalState([]);
+
+  const addInvitees = () => {
+    const parts = inviteInput.split(/[\s,;]+/).map(s => s.trim()).filter(Boolean);
+    const valid = parts.filter(e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
+    if (!valid.length) { onToast('Enter at least one valid email'); return; }
+    setInvitees(list => Array.from(new Set([...list, ...valid])));
+    setInviteInput('');
+    onToast(`${valid.length} invitee${valid.length === 1 ? '' : 's'} added`);
+  };
+  const removeInvitee = (e) => setInvitees(list => list.filter(x => x !== e));
+  const fileInputRef = React.useRef(null);
+  const onImportClick = () => fileInputRef.current && fileInputRef.current.click();
+  const onImportFile = async (ev) => {
+    const files = Array.from(ev.target.files || []);
+    if (!files.length) return;
+    let added = 0, skipped = 0;
+    const collected = [];
+    for (const f of files) {
+      try {
+        const text = await f.text();
+        const parts = text.split(/[\s,;\r\n\t"']+/).map(s => s.trim()).filter(Boolean);
+        for (const p of parts) {
+          if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p)) collected.push(p.toLowerCase());
+          else if (p.includes('@')) skipped++;
+        }
+      } catch { /* ignore */ }
+    }
+    if (!collected.length) { onToast('No valid emails found in file'); ev.target.value = ''; return; }
+    setInvitees(list => {
+      const set = new Set(list);
+      collected.forEach(e => { if (!set.has(e)) { set.add(e); added++; } });
+      return Array.from(set);
+    });
+    onToast(`Imported ${added} email${added === 1 ? '' : 's'}${skipped ? ` · ${skipped} skipped` : ''}`);
+    ev.target.value = '';
+  };
+
 
   const [regFields, setRegFields] = useModalState([
     { id: 1, label: 'First name', ph: 'Enter first name', locked: true },
@@ -193,14 +246,28 @@ function CreateEventModal({ onClose, onToast, inline }) {
   const editTicket = (id, k, v) => setTickets(t => t.map(x => x.id === id ? { ...x, [k]: v } : x));
 
   if (published) {
+    // Build a Google Calendar link with the event details
+    const pad = (n) => String(n).padStart(2, '0');
+    const start = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    start.setUTCHours(17, 0, 0, 0);
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    const fmtG = (d) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+    const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE`
+      + `&text=${encodeURIComponent(eventName)}`
+      + `&dates=${fmtG(start)}/${fmtG(end)}`
+      + `&details=${encodeURIComponent('Join us on SpatialChat. Registration link will be shared.')}`
+      + `&location=${encodeURIComponent('SpatialChat (online)')}`;
     return (
       <div className={inline ? 'fb-inline-wrap' : 'fb-overlay'}>
         <div className="fb-success">
           <div className="fb-success-ico"><Icon.check size={38}/></div>
           <div className="fb-success-h">{eventName} is live 🎉</div>
-          <div className="fb-success-p">Your registration flow is published. Share the link, or open the event space to start customizing rooms.</div>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 24 }}>
+          <div className="fb-success-p">Your registration flow is published. Share the link, add it to your calendar, or open the event space to start customizing rooms.</div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' }}>
             <button className="plat-cta ghost" onClick={() => onToast('Registration link copied')}><Icon.share size={14}/> Copy link</button>
+            <a className="plat-cta ghost" href={gcalUrl} target="_blank" rel="noreferrer" onClick={() => onToast('Opening Google Calendar…')}>
+              <Icon.calendar size={14}/> Add to Google Calendar
+            </a>
             <button className="plat-cta" onClick={onClose}><Icon.door size={14}/> Open event space</button>
           </div>
         </div>
@@ -232,14 +299,20 @@ function CreateEventModal({ onClose, onToast, inline }) {
             <span className="fb-draft">Draft</span>
           </div>
           <div className="fb-top-tabs">
+            <button className={`fb-tab ${view === 'details' ? 'active' : ''}`} onClick={() => setView('details')}>Event details</button>
             <button className={`fb-tab ${view === 'registration' ? 'active' : ''}`} onClick={() => setView('registration')}>Registration</button>
             <button className={`fb-tab ${view === 'builder' ? 'active' : ''}`} onClick={() => setView('builder')}>Landing page</button>
             <button className={`fb-tab ${view === 'branding' ? 'active' : ''}`} onClick={() => setView('branding')}>Branding &amp; CSS</button>
           </div>
           <div className="fb-top-right">
             <button className="fb-ghost-btn" onClick={() => onToast('Running test flow…')}><Icon.caretRight size={14}/> Test flow</button>
-            <button className="fb-publish" onClick={() => { setPublished(true); onToast('Event published'); }}><Icon.send size={14}/> Publish</button>
+            <button className="fb-publish" onClick={() => {
+              setPublished(true);
+              if (invitees.length) onToast(`Event published · invites sent to ${invitees.length} attendee${invitees.length === 1 ? '' : 's'}`);
+              else onToast('Event published');
+            }}><Icon.send size={14}/> Publish</button>
           </div>
+
         </div>
 
         {/* Canvas */}
@@ -320,8 +393,25 @@ function CreateEventModal({ onClose, onToast, inline }) {
           </div>
         </div>}
 
+        {view === 'details' && <DetailsView
+          name={eventName} setName={setEventName}
+          location={evLocation} setLocation={setEvLocation}
+          description={evDescription} setDescription={setEvDescription}
+          date={evDate} setDate={setEvDate}
+          time={evTime} setTime={setEvTime}
+          timezone={evTimezone} setTimezone={setEvTimezone}
+          capacity={evCapacity} setCapacity={setEvCapacity}
+          type={evType} setType={setEvType}
+          requireApproval={requireApproval} setRequireApproval={setRequireApproval}
+          ticketType={ticketType} setTicketType={setTicketType}
+          inviteInput={inviteInput} setInviteInput={setInviteInput}
+          invitees={invitees} addInvitees={addInvitees} removeInvitee={removeInvitee}
+          fileInputRef={fileInputRef} onImportClick={onImportClick} onImportFile={onImportFile}
+          onNext={() => setView('registration')}
+        />}
         {view === 'builder' && <BuilderView onToast={onToast}/>}
         {view === 'branding' && <BrandingView css={css} setCss={setCss} onToast={onToast}/>}
+
       </div>
     </div>
   );
@@ -349,6 +439,145 @@ function FbConn({ onAdd }) {
     </div>
   );
 }
+
+// ---- Event details form ----
+const TIMEZONES = ['UTC', 'America/Los_Angeles', 'America/New_York', 'America/Chicago', 'Europe/London', 'Europe/Berlin', 'Europe/Paris', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Singapore', 'Asia/Tokyo', 'Australia/Sydney'];
+
+function DetailsView({
+  name, setName, location, setLocation, description, setDescription,
+  date, setDate, time, setTime, timezone, setTimezone,
+  capacity, setCapacity, type, setType,
+  requireApproval, setRequireApproval, ticketType, setTicketType,
+  inviteInput, setInviteInput, invitees, addInvitees, removeInvitee,
+  fileInputRef, onImportClick, onImportFile, onNext
+}) {
+  return (
+    <div className="ev-details">
+      <div className="ev-details-inner">
+        <div className="ev-details-head">
+          <div className="ev-details-h">Event details</div>
+          <div className="ev-details-sub">Set up the basics — these power the registration page, calendar invites and confirmation emails.</div>
+        </div>
+
+        <div className="ev-section">
+          <div className="ev-section-title">Basics</div>
+          <div className="ev-grid">
+            <label className="ev-field ev-col-2">
+              <span className="ev-label">Event name</span>
+              <input className="ev-input" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. GlowFlow Summit 2026"/>
+            </label>
+            <label className="ev-field ev-col-2">
+              <span className="ev-label">Description</span>
+              <textarea className="ev-input ev-textarea" rows={3} value={description} onChange={e => setDescription(e.target.value)} placeholder="Tell attendees what to expect"/>
+            </label>
+            <label className="ev-field ev-col-2">
+              <span className="ev-label">Location</span>
+              <input className="ev-input" value={location} onChange={e => setLocation(e.target.value)} placeholder="SpatialChat (online) or physical address"/>
+            </label>
+          </div>
+        </div>
+
+        <div className="ev-section">
+          <div className="ev-section-title">Date &amp; time</div>
+          <div className="ev-grid">
+            <label className="ev-field">
+              <span className="ev-label">Date</span>
+              <input type="date" className="ev-input" value={date} onChange={e => setDate(e.target.value)}/>
+            </label>
+            <label className="ev-field">
+              <span className="ev-label">Start time</span>
+              <input type="time" className="ev-input" value={time} onChange={e => setTime(e.target.value)}/>
+            </label>
+            <label className="ev-field ev-col-2">
+              <span className="ev-label">Timezone</span>
+              <select className="ev-input" value={timezone} onChange={e => setTimezone(e.target.value)}>
+                {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div className="ev-section">
+          <div className="ev-section-title">Format &amp; access</div>
+          <div className="ev-grid">
+            <div className="ev-field ev-col-2">
+              <span className="ev-label">Event type</span>
+              <div className="ev-seg">
+                {[
+                  { id: 'webinar', label: 'Webinar', desc: 'One-to-many broadcast' },
+                  { id: 'virtual', label: 'Virtual event', desc: 'Multi-room with breakouts' },
+                  { id: 'hybrid', label: 'Hybrid', desc: 'In-person + online' },
+                ].map(o => (
+                  <button key={o.id} type="button" className={`ev-seg-opt ${type === o.id ? 'on' : ''}`} onClick={() => setType(o.id)}>
+                    <span className="ev-seg-name">{o.label}</span>
+                    <span className="ev-seg-desc">{o.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <label className="ev-field">
+              <span className="ev-label">Capacity</span>
+              <input type="number" min="1" className="ev-input" value={capacity} onChange={e => setCapacity(e.target.value)}/>
+            </label>
+            <div className="ev-field">
+              <span className="ev-label">Ticket type</span>
+              <div className="ev-seg ev-seg-2">
+                <button type="button" className={`ev-seg-opt ${ticketType === 'free' ? 'on' : ''}`} onClick={() => setTicketType('free')}>
+                  <span className="ev-seg-name">Free</span>
+                  <span className="ev-seg-desc">No payment required</span>
+                </button>
+                <button type="button" className={`ev-seg-opt ${ticketType === 'paid' ? 'on' : ''}`} onClick={() => setTicketType('paid')}>
+                  <span className="ev-seg-name">Paid</span>
+                  <span className="ev-seg-desc">Charge via Stripe</span>
+                </button>
+              </div>
+            </div>
+            <label className="ev-toggle-row ev-col-2">
+              <div>
+                <div className="ev-label">Require registration approval</div>
+                <div className="ev-help">Admins manually approve each signup before they receive a confirmation email.</div>
+              </div>
+              <button type="button" className={`ev-toggle ${requireApproval ? 'on' : ''}`} onClick={() => setRequireApproval(v => !v)} aria-pressed={requireApproval}>
+                <span className="ev-toggle-knob"/>
+              </button>
+            </label>
+          </div>
+        </div>
+
+        <div className="ev-section">
+          <div className="ev-section-title">Invite attendees</div>
+          <div className="ev-help" style={{ marginBottom: 10 }}>Add emails individually or import a CSV/TXT file to trigger invitation emails with the event landing page link as soon as you publish.</div>
+          <div className="ev-invite-row">
+            <input className="ev-input" value={inviteInput} onChange={e => setInviteInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addInvitees(); } }}
+              placeholder="alex@acme.com, sam@startup.io"/>
+            <button className="plat-cta ghost" onClick={onImportClick} type="button" title="Import emails from a CSV or text file"><Icon.upload size={14}/> Import</button>
+            <button className="plat-cta" onClick={addInvitees} type="button"><Icon.plus size={14}/> Add</button>
+            <input ref={fileInputRef} type="file" accept=".csv,.txt,.tsv,text/csv,text/plain" multiple style={{ display: 'none' }} onChange={onImportFile}/>
+          </div>
+          {invitees.length > 0 && (
+            <div className="ev-invitees">
+              <div className="ev-invitees-head">{invitees.length} attendee{invitees.length === 1 ? '' : 's'} will receive an invite</div>
+              <div className="ev-chips">
+                {invitees.map(e => (
+                  <span key={e} className="ev-chip">
+                    <Icon.user size={12}/> {e}
+                    <button onClick={() => removeInvitee(e)} title="Remove"><Icon.close size={11}/></button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="ev-details-actions">
+          <button className="plat-cta" onClick={onNext}>Continue to registration <Icon.caretRight size={14}/></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 // ---- Landing-page (site template) builder ----
 const BUILDER_WIDGETS = [

@@ -48,6 +48,9 @@ function initials(name) {
 /* ---------------- Analytics (Event Intelligence) ---------------- */
 function AnalyticsView({ onEnterRoom, initialEvent }) {
   const [eventId, setEventId] = usePageState(initialEvent || null);
+  const [edit, setEdit] = usePageState(false);
+  const [visible, setVisible] = usePageState(['kpis','pulse','attendance','rooms','journey','segments','roster','interaction','recs']);
+  const [gallery, setGallery] = usePageState(false);
   const ev = eventId ? EVENTS_DATA[eventId] : null;
   const S = EidSections;
   const events = Object.values(EVENTS_DATA);
@@ -80,6 +83,34 @@ function AnalyticsView({ onEnterRoom, initialEvent }) {
     );
   }
 
+  const ALL_WIDGETS = [
+    { id: 'kpis', name: 'KPI strip', desc: 'Headline metrics row', icon: Icon.chart },
+    { id: 'pulse', name: 'At a glance', desc: 'Friendly headline read', icon: Icon.star },
+    { id: 'attendance', name: 'Attendance quality', desc: 'Dwell + concurrency', icon: Icon.users },
+    { id: 'rooms', name: 'Room effectiveness', desc: 'Dwell network', icon: Icon.grid },
+    { id: 'journey', name: 'Movement & journey', desc: 'Room flow paths', icon: Icon.share },
+    { id: 'segments', name: 'Attendee segmentation', desc: 'Persona donut', icon: Icon.users },
+    { id: 'roster', name: 'Top attendees', desc: 'Ranked roster', icon: Icon.users },
+    { id: 'interaction', name: 'Interaction analysis', desc: 'Action mix + badges', icon: Icon.chat },
+    { id: 'recs', name: 'Recommendations', desc: 'Suggested next steps', icon: Icon.megaphone },
+  ];
+  const removeW = (id) => setVisible(v => v.filter(x => x !== id));
+  const addW = (id) => { setVisible(v => v.includes(id) ? v : [...v, id]); setGallery(false); };
+  const WIDGET = (id) => {
+    switch (id) {
+      case 'kpis': return <S.KpiStrip k={ev.kpis}/>;
+      case 'pulse': return <EngagementPulse ev={ev}/>;
+      case 'attendance': return <S.AttendanceSection ev={ev}/>;
+      case 'rooms': return <S.RoomsSection ev={ev}/>;
+      case 'journey': return <S.JourneySection ev={ev}/>;
+      case 'segments': return <S.SegmentationSection ev={ev}/>;
+      case 'roster': return <S.RosterSection ev={ev}/>;
+      case 'interaction': return <S.InteractionSection ev={ev}/>;
+      case 'recs': return <S.RecommendationsSection ev={ev}/>;
+      default: return null;
+    }
+  };
+
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 18 }}>
@@ -88,8 +119,14 @@ function AnalyticsView({ onEnterRoom, initialEvent }) {
           <Icon.caretRight size={12}/> <b style={{ color: 'var(--text)' }}>{ev.space}</b>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="plat-cta ghost"><Icon.doc size={14}/> Download PDF</button>
-          <button className="plat-cta ghost"><Icon.upload size={14}/> Raw data (CSV)</button>
+          {edit && <button className="plat-cta" onClick={() => setGallery(true)}><Icon.plus size={14}/> Add widget</button>}
+          <button className={`plat-cta ${edit ? '' : 'ghost'}`} onClick={() => setEdit(e => !e)}>
+            <Icon.pencil size={14}/> {edit ? 'Done editing' : 'Edit dashboard'}
+          </button>
+          {!edit && <>
+            <button className="plat-cta ghost"><Icon.doc size={14}/> Download PDF</button>
+            <button className="plat-cta ghost"><Icon.upload size={14}/> Raw data (CSV)</button>
+          </>}
         </div>
       </div>
       <div className={`eid-hero ${ev.accent === '#16A34A' ? 'green' : ''}`}>
@@ -103,15 +140,59 @@ function AnalyticsView({ onEnterRoom, initialEvent }) {
         </div>
         <div className="eid-hero-summary">{ev.summary}</div>
       </div>
-      <S.KpiStrip k={ev.kpis}/>
-      <EngagementPulse ev={ev}/>
-      <S.AttendanceSection ev={ev}/>
-      <S.RoomsSection ev={ev}/>
-      <S.JourneySection ev={ev}/>
-      <S.SegmentationSection ev={ev}/>
-      <S.RosterSection ev={ev}/>
-      <S.InteractionSection ev={ev}/>
-      <S.RecommendationsSection ev={ev}/>
+
+      {visible.map(id => {
+        const w = ALL_WIDGETS.find(x => x.id === id);
+        return (
+          <div key={id} className={`an-widget ${edit ? 'editing' : ''}`}>
+            {edit && (
+              <div className="an-widget-bar">
+                <span className="an-widget-bar-name"><w.icon size={12}/> {w.name}</span>
+                <button className="an-widget-remove" onClick={() => removeW(id)}><Icon.close size={14}/> Remove</button>
+              </div>
+            )}
+            {WIDGET(id)}
+          </div>
+        );
+      })}
+
+      {edit && (
+        <button className="an-add-tile" onClick={() => setGallery(true)}>
+          <Icon.plus size={18}/> Add a widget
+        </button>
+      )}
+
+      {gallery && (
+        <div className="plat-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) setGallery(false); }}>
+          <div className="plat-modal mid">
+            <div className="plat-modal-head">
+              <div>
+                <div className="plat-modal-title">Add a widget</div>
+                <div className="plat-modal-sub">Pick from the widget library to add to your dashboard</div>
+              </div>
+              <button className="plat-modal-close" onClick={() => setGallery(false)}><Icon.close size={18}/></button>
+            </div>
+            <div className="plat-modal-body">
+              <div className="an-gallery">
+                {ALL_WIDGETS.map(w => {
+                  const added = visible.includes(w.id);
+                  return (
+                    <button key={w.id} className={`an-gallery-card ${added ? 'added' : ''}`}
+                      onClick={() => !added && addW(w.id)} disabled={added}>
+                      <span className="an-gallery-ico"><w.icon size={18}/></span>
+                      <div className="an-gallery-info">
+                        <div className="an-gallery-name">{w.name}</div>
+                        <div className="an-gallery-desc">{w.desc}</div>
+                      </div>
+                      <span className="an-gallery-add">{added ? '✓ Added' : '+ Add'}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -395,8 +476,9 @@ function RecordingsPage() {
   const [activeRec, setActiveRec] = usePageState(null);
   const [section, setSection] = usePageState('recordings');
   const ping = (m) => { setToast(m); clearTimeout(window.__recT); window.__recT = setTimeout(() => setToast(null), 1700); };
-  const Clip = window.ClipModal, Share = window.ShareModal;
+  const Clip = window.ClipModal, Share = window.ShareModal, Summary = window.SummaryModal;
   const openClip = (r) => { setActiveRec(r); setModal('clip'); };
+  const openSummary = (r) => { setActiveRec(r); setModal('summary'); };
   const recs = [
     { name: 'Opening Keynote — The Future of Gathering', speaker: 'Arty Starr', dur: '48:12', date: 'May 20', views: '3,204', q: '4K', thumb: 'https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=400&q=80', published: true },
     { name: 'Idea Garden: Designing for Presence', speaker: 'Pritina Irvin', dur: '1:12:40', date: 'May 20', views: '1,486', q: '1080p', thumb: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=400&q=80', published: true },
@@ -442,6 +524,7 @@ function RecordingsPage() {
               <div className="rec-actions">
                 <button className="rec-btn" onClick={() => openClip(r)}><Icon.pencil size={13}/> Edit</button>
                 {section === 'recordings' && <button className="rec-btn" onClick={() => openClip(r)}><Icon.video size={13}/> Clip</button>}
+                {section === 'recordings' && <button className="rec-btn" onClick={() => openSummary(r)}><Icon.doc size={13}/> Summary</button>}
                 <button className="rec-btn" onClick={() => setModal('share')}><Icon.share size={13}/> Share</button>
                 <button className="rec-btn primary" onClick={() => ping(r.published ? 'Opening…' : 'Published')}>{r.published ? 'View' : 'Publish'}</button>
               </div>
@@ -452,6 +535,7 @@ function RecordingsPage() {
       {toast && <div className="toast">{toast}</div>}
       {modal === 'clip' && Clip && <Clip speaker={{ photo: (activeRec && activeRec.thumb) }} onClose={() => setModal(null)} onShare={() => setModal('share')} showToast={ping}/>}
       {modal === 'share' && Share && <Share onClose={() => setModal(null)} showToast={ping}/>}
+      {modal === 'summary' && Summary && <Summary onClose={() => setModal(null)} showToast={ping}/>}
     </>
   );
 }
@@ -590,10 +674,10 @@ function CommunityPage() {
   );
 }
 
-/* ---------------- AI Agent ---------------- */
+/* ---------------- SpatialChat AI ---------------- */
 function AIAgentPage({ onToast }) {
   const [msgs, setMsgs] = usePageState([
-    { role: 'agent', text: "Hi Arty 👋 I'm your Event Manager Agent. Tell me what you want to run and I'll set up the whole event — rooms, registration flow, agenda and emails." },
+    { role: 'agent', text: "Hi Arty 👋 I'm SpatialChat AI. Tell me what you want to run and I'll set up the whole event — rooms, registration flow, agenda and emails." },
   ]);
   const [draft, setDraft] = usePageState('');
   const prompts = [
@@ -609,13 +693,13 @@ function AIAgentPage({ onToast }) {
   };
   return (
     <>
-      <PageHead title="AI Agent" sub="Your event copilot — build and run events from a prompt"/>
+      <PageHead title="SpatialChat AI" sub="Your event copilot — build and run events from a prompt"/>
       <div className="ai-wrap">
         <div className="ai-chat">
           <div className="ai-head">
             <span className="ai-head-ava"><Icon.megaphone size={17}/></span>
             <div style={{ flex: 1 }}>
-              <div className="ai-head-name">Event Manager Agent</div>
+              <div className="ai-head-name">SpatialChat AI</div>
               <div className="ai-head-status"><span className="ai-head-dot"/> Online · ready to build</div>
             </div>
             <button className="plat-cta ghost" onClick={() => { setMsgs(m => m.slice(0,1)); onToast && onToast('New chat'); }}><Icon.plus size={14}/> New chat</button>
@@ -629,14 +713,14 @@ function AIAgentPage({ onToast }) {
             ))}
           </div>
           <div className="ai-composer">
-            <input placeholder="Ask your Event Manager Agent…" value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}/>
+            <input placeholder="Ask SpatialChat AI…" value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}/>
             <button className="ai-send" onClick={() => send()}><Icon.send size={16}/></button>
           </div>
         </div>
         <div className="ai-side">
           <div className="ai-side-title">Try a prompt</div>
           {prompts.map(p => <button key={p} className="ai-prompt" onClick={() => send(p)}>{p}</button>)}
-          <div className="ai-side-title" style={{ marginTop: 18 }}>Agent skills</div>
+          <div className="ai-side-title" style={{ marginTop: 18 }}>What SpatialChat AI can do</div>
           {[['Create events end-to-end', Icon.calendar],['Generate registration pages', Icon.doc],['Summarize analytics', Icon.chart],['Write attendee emails', Icon.chat]].map(([t, Ic]) => (
             <div key={t} className="ai-skill"><span className="ai-skill-ico"><Ic size={15}/></span>{t}</div>
           ))}
@@ -860,24 +944,65 @@ function NetworkingPage() {
 
 function SpacesPage({ onEnter }) {
   const spaces = P().spaces;
+  const [scope, setScope] = usePageState('last');
+  const [menuFor, setMenuFor] = usePageState(null);
+  const teams = Array.from(new Set(spaces.map(s => s.team))).filter(Boolean);
+  const filtered = scope === 'last' ? spaces
+    : scope.startsWith('team:') ? spaces.filter(s => s.team === scope.slice(5))
+    : spaces;
   return (
     <>
       <PageHead title="My Spaces" sub="Jump into any of your live or persistent spaces"
         action={<button className="plat-cta"><Icon.plus size={16}/> New space</button>}/>
-      <div className="plat-events-grid">
-        {spaces.map(s => (
-          <div key={s.id} className="plat-card" style={{ display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer' }} onClick={() => onEnter(s)}>
-            <span style={{ width: 52, height: 52, borderRadius: 14, background: s.accent, color: '#fff', display: 'grid', placeItems: 'center', fontSize: 16, fontWeight: 700, flexShrink: 0 }}>{s.initials}</span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 9 }}>
-                {s.name}
-                {s.live > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: 'rgba(22,163,74,0.12)', padding: '2px 8px', borderRadius: 999 }}>{s.live} live</span>}
-              </div>
-              <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 2 }}>{s.team} · {s.visited}</div>
-            </div>
-            <button className="plat-cta ghost" onClick={(e) => { e.stopPropagation(); onEnter(s); }}><Icon.door size={14}/> Enter</button>
+      <div className="spaces-layout">
+        <aside className="spaces-side">
+          <button className={`spaces-side-item ${scope === 'last' ? 'active' : ''}`} onClick={() => setScope('last')}>
+            <Icon.clock size={16}/> Last visited
+          </button>
+          <button className={`spaces-side-item ${scope === 'demo' ? 'active' : ''}`} onClick={() => setScope('demo')}>
+            <Icon.star size={16}/> Live Demo
+          </button>
+          <div className="spaces-side-label">Your teams</div>
+          {teams.map(t => (
+            <button key={t} className={`spaces-side-item ${scope === `team:${t}` ? 'active' : ''}`} onClick={() => setScope(`team:${t}`)}>
+              <span className="spaces-side-team">{(t.match(/\b\w/g) || []).slice(0, 1).join('').toUpperCase()}</span> {t}
+            </button>
+          ))}
+          <button className="spaces-side-item"><Icon.plus size={16}/> New team</button>
+        </aside>
+        <div className="spaces-main">
+          <div className="spaces-main-title">
+            {scope === 'last' ? 'Last visited' : scope === 'demo' ? 'Live Demo' : scope.slice(5)}
           </div>
-        ))}
+          <div className="spaces-list">
+            {filtered.map(s => (
+              <div key={s.id} className="spaces-row" onClick={() => onEnter(s)}>
+                <span className="spaces-row-avatar" style={{ background: 'var(--bg-elevated)', color: 'var(--text)' }}>{s.initials}</span>
+                <div className="spaces-row-info">
+                  <div className="spaces-row-name">
+                    {s.name}
+                    {s.live > 0 && <span className="spaces-row-live">{s.live} live</span>}
+                  </div>
+                  <div className="spaces-row-sub">{s.team !== 'Demo' ? `In ${s.team} · ` : ''}{s.visited}</div>
+                </div>
+                <div className="spaces-row-menu-wrap" onClick={(e) => e.stopPropagation()}>
+                  <button className="spaces-row-menu" onClick={() => setMenuFor(menuFor === s.id ? null : s.id)}>···</button>
+                  {menuFor === s.id && (
+                    <>
+                      <div className="plat-filter-backdrop" onClick={() => setMenuFor(null)}/>
+                      <div className="plat-filter-menu" style={{ right: 0, left: 'auto', minWidth: 160 }}>
+                        <button className="plat-filter-opt" onClick={() => { setMenuFor(null); onEnter(s); }}><Icon.door size={14}/> Enter</button>
+                        <button className="plat-filter-opt"><Icon.pencil size={14}/> Rename</button>
+                        <button className="plat-filter-opt"><Icon.share size={14}/> Share link</button>
+                        <button className="plat-filter-opt" style={{ color: 'var(--brand-red)' }}><Icon.close size={14}/> Remove</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </>
   );

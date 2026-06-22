@@ -1298,9 +1298,9 @@ input, textarea {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  min-width: 52px;
-  height: 44px;
+  gap: 3px;
+  min-width: 56px;
+  height: 48px;
   padding: 0 6px;
   border-radius: var(--radius-md);
   color: var(--text-secondary);
@@ -1309,6 +1309,7 @@ input, textarea {
   transition: all 150ms var(--ease-out);
   white-space: nowrap;
   flex-shrink: 0;
+  line-height: 1;
 }
 
 .bb-btn:hover { background: var(--surface); color: var(--text); }
@@ -1316,7 +1317,7 @@ input, textarea {
 .bb-btn-icon {
   display: grid;
   place-items: center;
-  width: 18px; height: 18px;
+  width: 24px; height: 24px;
   flex-shrink: 0;
   transition: all 150ms var(--ease-out);
 }
@@ -1325,10 +1326,11 @@ input, textarea {
   font-size: 10px;
   font-weight: 500;
   letter-spacing: -0.005em;
-  max-width: 56px;
+  max-width: 64px;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.1;
+  display: block;
 }
 
 .bb-btn.bb-add { color: var(--text); }
@@ -1345,7 +1347,7 @@ input, textarea {
   color: #FCA5A1;
 }
 
-/* Mic ON: filled dark circle */
+/* Mic ON: filled dark circle — keep icon box at 24px so row height never shifts */
 .bb-btn.mic-on {
   background: transparent;
   color: var(--text);
@@ -1365,7 +1367,8 @@ input, textarea {
   background: var(--brand-red);
   color: #FFFFFF;
   margin-left: 4px;
-  min-width: 52px;
+  min-width: 56px;
+  height: 48px;
 }
 .bb-btn.danger:hover { background: var(--brand-red-hover); color: #FFFFFF; }
 
