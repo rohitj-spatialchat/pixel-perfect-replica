@@ -190,6 +190,32 @@ function CreateEventModal({ onClose, onToast, inline, eventType }) {
     onToast(`${valid.length} invitee${valid.length === 1 ? '' : 's'} added`);
   };
   const removeInvitee = (e) => setInvitees(list => list.filter(x => x !== e));
+  const fileInputRef = React.useRef(null);
+  const onImportClick = () => fileInputRef.current && fileInputRef.current.click();
+  const onImportFile = async (ev) => {
+    const files = Array.from(ev.target.files || []);
+    if (!files.length) return;
+    let added = 0, skipped = 0;
+    const collected = [];
+    for (const f of files) {
+      try {
+        const text = await f.text();
+        const parts = text.split(/[\s,;\r\n\t"']+/).map(s => s.trim()).filter(Boolean);
+        for (const p of parts) {
+          if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p)) collected.push(p.toLowerCase());
+          else if (p.includes('@')) skipped++;
+        }
+      } catch { /* ignore */ }
+    }
+    if (!collected.length) { onToast('No valid emails found in file'); ev.target.value = ''; return; }
+    setInvitees(list => {
+      const set = new Set(list);
+      collected.forEach(e => { if (!set.has(e)) { set.add(e); added++; } });
+      return Array.from(set);
+    });
+    onToast(`Imported ${added} email${added === 1 ? '' : 's'}${skipped ? ` · ${skipped} skipped` : ''}`);
+    ev.target.value = '';
+  };
 
 
   const [regFields, setRegFields] = useModalState([
@@ -380,6 +406,7 @@ function CreateEventModal({ onClose, onToast, inline, eventType }) {
           ticketType={ticketType} setTicketType={setTicketType}
           inviteInput={inviteInput} setInviteInput={setInviteInput}
           invitees={invitees} addInvitees={addInvitees} removeInvitee={removeInvitee}
+          fileInputRef={fileInputRef} onImportClick={onImportClick} onImportFile={onImportFile}
           onNext={() => setView('registration')}
         />}
         {view === 'builder' && <BuilderView onToast={onToast}/>}
@@ -421,7 +448,8 @@ function DetailsView({
   date, setDate, time, setTime, timezone, setTimezone,
   capacity, setCapacity, type, setType,
   requireApproval, setRequireApproval, ticketType, setTicketType,
-  inviteInput, setInviteInput, invitees, addInvitees, removeInvitee, onNext
+  inviteInput, setInviteInput, invitees, addInvitees, removeInvitee,
+  fileInputRef, onImportClick, onImportFile, onNext
 }) {
   return (
     <div className="ev-details">
@@ -518,12 +546,14 @@ function DetailsView({
 
         <div className="ev-section">
           <div className="ev-section-title">Invite attendees</div>
-          <div className="ev-help" style={{ marginBottom: 10 }}>Add emails to trigger invitation emails with event details and join link as soon as you publish.</div>
+          <div className="ev-help" style={{ marginBottom: 10 }}>Add emails individually or import a CSV/TXT file to trigger invitation emails with the event landing page link as soon as you publish.</div>
           <div className="ev-invite-row">
             <input className="ev-input" value={inviteInput} onChange={e => setInviteInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addInvitees(); } }}
               placeholder="alex@acme.com, sam@startup.io"/>
+            <button className="plat-cta ghost" onClick={onImportClick} type="button" title="Import emails from a CSV or text file"><Icon.upload size={14}/> Import</button>
             <button className="plat-cta" onClick={addInvitees} type="button"><Icon.plus size={14}/> Add</button>
+            <input ref={fileInputRef} type="file" accept=".csv,.txt,.tsv,text/csv,text/plain" multiple style={{ display: 'none' }} onChange={onImportFile}/>
           </div>
           {invitees.length > 0 && (
             <div className="ev-invitees">
