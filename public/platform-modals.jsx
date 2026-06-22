@@ -158,12 +158,39 @@ const TEMPLATES = [
 let _fid = 100;
 const nid = () => ++_fid;
 
-function CreateEventModal({ onClose, onToast, inline }) {
+function CreateEventModal({ onClose, onToast, inline, eventType }) {
   const [eventName, setEventName] = useModalState('Untitled event');
   const [sel, setSel] = useModalState('reg');
   const [published, setPublished] = useModalState(false);
-  const [view, setView] = useModalState(inline ? 'builder' : 'registration');
+  const [view, setView] = useModalState('details');
   const [css, setCss] = useModalState('');
+
+  // Event details
+  const [evLocation, setEvLocation] = useModalState('SpatialChat (online)');
+  const [evDescription, setEvDescription] = useModalState('Join us for an interactive session with live speakers, breakout rooms and networking.');
+  const [evDate, setEvDate] = useModalState(() => {
+    const d = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    return d.toISOString().slice(0, 10);
+  });
+  const [evTime, setEvTime] = useModalState('17:00');
+  const [evTimezone, setEvTimezone] = useModalState('UTC');
+  const [evCapacity, setEvCapacity] = useModalState('250');
+  const [evType, setEvType] = useModalState(eventType === 'webinar' ? 'webinar' : 'virtual');
+  const [requireApproval, setRequireApproval] = useModalState(false);
+  const [ticketType, setTicketType] = useModalState('free');
+  const [inviteInput, setInviteInput] = useModalState('');
+  const [invitees, setInvitees] = useModalState([]);
+
+  const addInvitees = () => {
+    const parts = inviteInput.split(/[\s,;]+/).map(s => s.trim()).filter(Boolean);
+    const valid = parts.filter(e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
+    if (!valid.length) { onToast('Enter at least one valid email'); return; }
+    setInvitees(list => Array.from(new Set([...list, ...valid])));
+    setInviteInput('');
+    onToast(`${valid.length} invitee${valid.length === 1 ? '' : 's'} added`);
+  };
+  const removeInvitee = (e) => setInvitees(list => list.filter(x => x !== e));
+
 
   const [regFields, setRegFields] = useModalState([
     { id: 1, label: 'First name', ph: 'Enter first name', locked: true },
