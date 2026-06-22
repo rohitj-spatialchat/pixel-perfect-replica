@@ -418,6 +418,13 @@ function CreateEventModal({ onClose, onToast, inline, eventType }) {
         />}
         {view === 'builder' && <BuilderView onToast={onToast}/>}
         {view === 'branding' && <BrandingView css={css} setCss={setCss} onToast={onToast}/>}
+        {view === 'tickets' && window.EventExtras && <window.EventExtras.TicketsView onToast={onToast}/>}
+        {view === 'agenda' && window.EventExtras && <window.EventExtras.AgendaView onToast={onToast}/>}
+        {view === 'emails' && window.EventExtras && <window.EventExtras.EmailsView onToast={onToast}/>}
+        {view === 'engagement' && window.EventExtras && <window.EventExtras.EngagementView onToast={onToast}/>}
+        {view === 'streaming' && window.EventExtras && <window.EventExtras.StreamingView onToast={onToast}/>}
+        {view === 'integrations' && window.EventExtras && <window.EventExtras.IntegrationsTabView onToast={onToast}/>}
+        {view === 'mobile' && window.EventExtras && <window.EventExtras.MobileEmbedView onToast={onToast} eventName={eventName}/>}
 
       </div>
     </div>
