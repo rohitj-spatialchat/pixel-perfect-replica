@@ -633,10 +633,55 @@ function DetailsView({
             <input className="ev-input" value={inviteInput} onChange={e => setInviteInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addInvitees(); } }}
               placeholder="alex@acme.com, sam@startup.io"/>
-            <button className="plat-cta ghost" onClick={onImportClick} type="button" title="Import emails from a CSV or text file"><Icon.upload size={14}/> Import</button>
+            <button className={`plat-cta ghost ${picker === 'crm' ? 'on' : ''}`} onClick={() => setPicker(p => p === 'crm' ? null : 'crm')} type="button" title="Pull contacts from your CRM"><Icon.broadcast size={14}/> Sync with CRM</button>
+            <button className={`plat-cta ghost ${picker === 'people' ? 'on' : ''}`} onClick={() => setPicker(p => p === 'people' ? null : 'people')} type="button" title="Pick attendees from your People directory"><Icon.users size={14}/> Import from People</button>
+            <button className="plat-cta ghost" onClick={onImportClick} type="button" title="Import emails from a CSV or text file"><Icon.upload size={14}/> Import file</button>
             <button className="plat-cta" onClick={addInvitees} type="button"><Icon.plus size={14}/> Add</button>
             <input ref={fileInputRef} type="file" accept=".csv,.txt,.tsv,text/csv,text/plain" multiple style={{ display: 'none' }} onChange={onImportFile}/>
           </div>
+          {picker && (
+            <div className="ev-picker">
+              <div className="ev-picker-head">
+                <div className="ev-picker-title">
+                  {picker === 'crm' ? 'Pull contacts from CRM' : 'Pick from People directory'}
+                </div>
+                <button className="ev-picker-x" onClick={() => setPicker(null)} type="button"><Icon.close size={14}/></button>
+              </div>
+              {picker === 'crm' && (
+                <div className="ev-picker-tabs">
+                  {CRM_SOURCES.map(s => (
+                    <button key={s.id} type="button" className={`ev-picker-tab ${crmSource === s.id ? 'on' : ''}`} onClick={() => setCrmSource(s.id)}>
+                      <span className="ev-picker-tab-dot" style={{ background: s.bg }}/> {s.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="ev-picker-search">
+                <Icon.search size={13}/>
+                <input value={pickerQ} onChange={e => setPickerQ(e.target.value)} placeholder={picker === 'crm' ? 'Search contacts, lists, companies…' : 'Search people…'}/>
+              </div>
+              <div className="ev-picker-list">
+                <div className="ev-picker-row head">
+                  <button type="button" className={`ev-picker-check ${allChecked ? 'on' : ''}`} onClick={toggleAll}>{allChecked && <Icon.check size={11}/>}</button>
+                  <span>Name</span><span>Email</span><span>{picker === 'crm' ? 'List' : 'Event'}</span>
+                </div>
+                {filteredRows.length === 0 && <div className="ev-picker-empty">No matches</div>}
+                {filteredRows.map(r => (
+                  <label key={r.email} className={`ev-picker-row ${pickerSel[r.email] ? 'on' : ''}`}>
+                    <button type="button" className={`ev-picker-check ${pickerSel[r.email] ? 'on' : ''}`} onClick={() => setPickerSel(s => ({ ...s, [r.email]: !s[r.email] }))}>{pickerSel[r.email] && <Icon.check size={11}/>}</button>
+                    <span className="ev-picker-name">{r.name}{r.company ? <em> · {r.company}</em> : ''}</span>
+                    <span className="ev-picker-email">{r.email}</span>
+                    <span className="ev-picker-meta">{picker === 'crm' ? r.list : r.event}</span>
+                  </label>
+                ))}
+              </div>
+              <div className="ev-picker-foot">
+                <span className="ev-picker-count">{selectedEmails.length} selected</span>
+                <button type="button" className="plat-cta ghost" onClick={() => setPicker(null)}>Cancel</button>
+                <button type="button" className="plat-cta" onClick={confirmAdd}><Icon.plus size={14}/> Add to invites</button>
+              </div>
+            </div>
+          )}
           {invitees.length > 0 && (
             <div className="ev-invitees">
               <div className="ev-invitees-head">{invitees.length} attendee{invitees.length === 1 ? '' : 's'} will receive an invite</div>
