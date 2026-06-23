@@ -463,9 +463,76 @@ function DetailsView({
   date, setDate, time, setTime, timezone, setTimezone,
   capacity, setCapacity, type, setType,
   requireApproval, setRequireApproval, ticketType, setTicketType,
-  inviteInput, setInviteInput, invitees, addInvitees, removeInvitee,
-  fileInputRef, onImportClick, onImportFile, onNext
+  inviteInput, setInviteInput, invitees, addInvitees, removeInvitee, setInvitees,
+  fileInputRef, onImportClick, onImportFile, onToast, onNext
 }) {
+  const [picker, setPicker] = React.useState(null); // 'crm' | 'people' | null
+  const [crmSource, setCrmSource] = React.useState('hubspot');
+  const [pickerQ, setPickerQ] = React.useState('');
+  const [pickerSel, setPickerSel] = React.useState({});
+  React.useEffect(() => { setPickerSel({}); setPickerQ(''); }, [picker, crmSource]);
+
+  const CRM_SOURCES = [
+    { id: 'hubspot', name: 'HubSpot', bg: '#FF7A59' },
+    { id: 'salesforce', name: 'Salesforce', bg: '#00A1E0' },
+    { id: 'marketo', name: 'Marketo', bg: '#5C4C9F' },
+    { id: 'pipedrive', name: 'Pipedrive', bg: '#1A1A1A' },
+  ];
+  const CRM_CONTACTS = {
+    hubspot: [
+      { name: 'Priya Natarajan', email: 'priya@northwind.io', company: 'Northwind', list: 'Q3 Webinar MQLs' },
+      { name: 'Marcus Lee', email: 'marcus.lee@acme.co', company: 'Acme', list: 'Q3 Webinar MQLs' },
+      { name: 'Sofia Romero', email: 'sofia@brightlabs.com', company: 'BrightLabs', list: 'Product Newsletter' },
+      { name: 'Daniel Okafor', email: 'd.okafor@helios.dev', company: 'Helios', list: 'Product Newsletter' },
+      { name: 'Hannah Kim', email: 'hannah@pixelforge.co', company: 'PixelForge', list: 'Customer Council' },
+      { name: 'Tomás Álvarez', email: 'tomas@nubeworks.mx', company: 'Nubeworks', list: 'Customer Council' },
+    ],
+    salesforce: [
+      { name: 'Rohit Mehta', email: 'rohit@vectorpath.io', company: 'VectorPath', list: 'Enterprise Pipeline' },
+      { name: 'Emily Carter', email: 'e.carter@northgate.com', company: 'Northgate', list: 'Enterprise Pipeline' },
+      { name: 'Felix Bauer', email: 'felix@kraftwerk.de', company: 'Kraftwerk', list: 'EMEA Targets' },
+      { name: 'Aisha Bello', email: 'aisha@lumen.africa', company: 'Lumen', list: 'EMEA Targets' },
+      { name: 'Yuki Tanaka', email: 'yuki@sora.jp', company: 'Sora', list: 'APAC Targets' },
+    ],
+    marketo: [
+      { name: 'Olivia Park', email: 'olivia@cascade.ai', company: 'Cascade', list: 'Nurture Program A' },
+      { name: 'Jonas Berg', email: 'jonas@fjord.no', company: 'Fjord', list: 'Nurture Program A' },
+      { name: 'Ines Moreau', email: 'ines@parisflow.fr', company: 'ParisFlow', list: 'Webinar 2026 Series' },
+    ],
+    pipedrive: [
+      { name: 'Carlos Vega', email: 'carlos@vegahq.com', company: 'VegaHQ', list: 'Open Deals · Q4' },
+      { name: 'Mei Wong', email: 'mei@orbitlabs.com', company: 'OrbitLabs', list: 'Open Deals · Q4' },
+      { name: 'Aaron Patel', email: 'aaron@quill.io', company: 'Quill', list: 'Closed-Lost Re-engage' },
+    ],
+  };
+
+  const peopleList = (window.PLATFORM_DATA && window.PLATFORM_DATA.people) || [];
+  const sourceRows = picker === 'crm' ? CRM_CONTACTS[crmSource] : peopleList;
+  const filteredRows = (sourceRows || []).filter(r => {
+    if (!pickerQ) return true;
+    const q = pickerQ.toLowerCase();
+    return (r.name || '').toLowerCase().includes(q) || (r.email || '').toLowerCase().includes(q) || (r.company || '').toLowerCase().includes(q);
+  });
+  const selectedEmails = Object.keys(pickerSel).filter(k => pickerSel[k]);
+  const allChecked = filteredRows.length > 0 && filteredRows.every(r => pickerSel[r.email]);
+  const toggleAll = () => {
+    const next = { ...pickerSel };
+    if (allChecked) filteredRows.forEach(r => { delete next[r.email]; });
+    else filteredRows.forEach(r => { next[r.email] = true; });
+    setPickerSel(next);
+  };
+  const confirmAdd = () => {
+    if (!selectedEmails.length) { onToast && onToast('Select at least one contact'); return; }
+    let added = 0;
+    setInvitees(list => {
+      const set = new Set(list);
+      selectedEmails.forEach(e => { if (!set.has(e)) { set.add(e); added++; } });
+      return Array.from(set);
+    });
+    const label = picker === 'crm' ? CRM_SOURCES.find(s => s.id === crmSource).name : 'People directory';
+    onToast && onToast(`${added} contact${added === 1 ? '' : 's'} added from ${label}`);
+    setPicker(null);
+  };
   return (
     <div className="ev-details">
       <div className="ev-details-inner">
