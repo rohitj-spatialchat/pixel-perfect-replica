@@ -628,14 +628,14 @@ function DetailsView({
 
         <div className="ev-section">
           <div className="ev-section-title">Invite attendees</div>
-          <div className="ev-help" style={{ marginBottom: 10 }}>Add emails individually or import a CSV/TXT file to trigger invitation emails with the event landing page link as soon as you publish.</div>
+          <div className="ev-help" style={{ marginBottom: 10 }}>Add emails individually or upload a CSV to trigger invitation emails with the event landing page link as soon as you publish.</div>
           <div className="ev-invite-row">
             <input className="ev-input" value={inviteInput} onChange={e => setInviteInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addInvitees(); } }}
               placeholder="alex@acme.com, sam@startup.io"/>
             <button className={`plat-cta ghost ${picker === 'crm' ? 'on' : ''}`} onClick={() => setPicker(p => p === 'crm' ? null : 'crm')} type="button" title="Pull contacts from your CRM"><Icon.broadcast size={14}/> Sync with CRM</button>
             <button className={`plat-cta ghost ${picker === 'people' ? 'on' : ''}`} onClick={() => setPicker(p => p === 'people' ? null : 'people')} type="button" title="Pick attendees from your People directory"><Icon.users size={14}/> Import from People</button>
-            <button className="plat-cta ghost" onClick={onImportClick} type="button" title="Import emails from a CSV or text file"><Icon.upload size={14}/> Import file</button>
+            <button className="plat-cta ghost" onClick={onImportClick} type="button" title="Upload emails from a CSV file"><Icon.upload size={14}/> Upload CSV</button>
             <button className="plat-cta" onClick={addInvitees} type="button"><Icon.plus size={14}/> Add</button>
             <input ref={fileInputRef} type="file" accept=".csv,.txt,.tsv,text/csv,text/plain" multiple style={{ display: 'none' }} onChange={onImportFile}/>
           </div>
