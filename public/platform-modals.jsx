@@ -656,9 +656,15 @@ function DetailsView({
                   ))}
                 </div>
               )}
-              <div className="ev-picker-search">
-                <Icon.search size={13}/>
-                <input value={pickerQ} onChange={e => setPickerQ(e.target.value)} placeholder={picker === 'crm' ? 'Search contacts, lists, companies…' : 'Search people…'}/>
+              <div className="ev-picker-toolbar">
+                <div className="ev-picker-search">
+                  <Icon.search size={13}/>
+                  <input value={pickerQ} onChange={e => setPickerQ(e.target.value)} placeholder="Search by name, email or company…"/>
+                </div>
+                <button type="button" className="ev-picker-pill">Title <Icon.caretDown size={11}/></button>
+                <button type="button" className="ev-picker-pill">Company <Icon.caretDown size={11}/></button>
+                <button type="button" className="ev-picker-pill"><Icon.globe size={12}/> Country <Icon.caretDown size={11}/></button>
+                <button type="button" className="ev-picker-pill"><Icon.calendar size={12}/> Date joined <Icon.caretDown size={11}/></button>
               </div>
               <div className="ev-picker-list">
                 <div className="ev-picker-row head">
