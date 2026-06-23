@@ -506,7 +506,7 @@ function DetailsView({
     ],
   };
 
-  const peopleList = (window.PLATFORM_DATA && window.PLATFORM_DATA.people) || [];
+  const peopleList = (window.PLATFORM && window.PLATFORM.people) || [];
   const sourceRows = picker === 'crm' ? CRM_CONTACTS[crmSource] : peopleList;
   const filteredRows = (sourceRows || []).filter(r => {
     if (!pickerQ) return true;
