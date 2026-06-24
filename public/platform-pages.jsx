@@ -40,6 +40,25 @@ function PageHead({ title, sub, action }) {
   );
 }
 
+function FilterPanel({ placeholder = 'Search by name, email or company…', pills = ['Title','Company','Country','Date joined'] }) {
+  const iconFor = (p) => p === 'Country' ? <Icon.globe size={13}/> : p === 'Date joined' ? <Icon.calendar size={13}/> : null;
+  return (
+    <div className="ex-filter-card" style={{ marginBottom: 16 }}>
+      <div className="ev-picker-toolbar">
+        <div className="ev-picker-search">
+          <Icon.search size={14}/>
+          <input placeholder={placeholder} />
+        </div>
+        {pills.map(p => (
+          <button key={p} className="ev-picker-pill" type="button">
+            {iconFor(p)} {p} <Icon.caretDown size={12}/>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function initials(name) {
   const parts = name.replace(/[·•].*$/, '').trim().split(/\s+/);
   return (parts[0]?.[0] || '') + (parts[1]?.[0] || '');
