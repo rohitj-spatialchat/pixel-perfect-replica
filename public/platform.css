@@ -1542,3 +1542,7 @@ select.ev-input { appearance: none; background-image: linear-gradient(45deg, tra
 .ev-picker-empty { padding: 24px; text-align: center; color: var(--muted); font-size: 13px; }
 .ev-picker-foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); background: rgba(0,0,0,0.015); }
 .ev-picker-count { margin-right: auto; font-size: 12px; color: var(--muted); }
+
+.ex-filter-card { border: 1px solid var(--line); border-radius: 12px; background: #fff; margin: 12px 0 16px; overflow: hidden; box-shadow: 0 1px 2px rgba(15,23,42,0.04); }
+.ex-filter-card .ev-picker-toolbar { border-bottom: 0; padding: 12px; }
+
