@@ -233,6 +233,7 @@ function EventsPage({ onOpenAnalytics, onCreateEvent }) {
     <>
       <PageHead title="Events" sub="Every event hosted in your SpatialChat spaces"
         action={<button className="plat-cta" onClick={onCreateEvent}><Icon.plus size={16}/> Create Event</button>}/>
+      <FilterPanel placeholder="Search events…" pills={['Status','Host','Country','Date']}/>
       <div className="plat-events-grid">
         {P().events.map(e => (
           <div key={e.id} className="plat-event-tile" onClick={() => onOpenAnalytics(e.id)}>
@@ -361,6 +362,7 @@ function RegistrationPage() {
           <button className="plat-cta ghost"><Icon.expand size={15}/> Preview</button>
           <button className="plat-cta"><Icon.share size={15}/> Publish</button>
         </div>}/>
+      <FilterPanel placeholder="Search registrants…" pills={['Ticket','Company','Country','Date joined']}/>
       <div className="plat-reg">
         <div className="plat-reg-preview">
           <div className="plat-reg-hero">
@@ -536,6 +538,7 @@ function RecordingsPage() {
   return (
     <>
       <PageHead title="Recordings" sub="Recorded sessions — edit, set quality, create clips and share"/>
+      <FilterPanel placeholder="Search recordings…" pills={['Event','Host','Duration','Date']}/>
       <div className="people-scope">
         <button className={`people-scope-btn ${section === 'recordings' ? 'active' : ''}`} onClick={() => setSection('recordings')}>Recordings <span style={{ opacity: 0.6 }}>{recs.length}</span></button>
         <button className={`people-scope-btn ${section === 'clips' ? 'active' : ''}`} onClick={() => setSection('clips')}>Clips <span style={{ opacity: 0.6 }}>{clips.length}</span></button>
@@ -605,6 +608,7 @@ function RevenuePage() {
     <>
       <PageHead title="Revenue" sub="Ticket revenue by attendee and by company"
         action={<button className="plat-cta"><Icon.upload size={16}/> Export</button>}/>
+      <FilterPanel placeholder="Search attendee or company…" pills={['Ticket','Company','Country','Date']}/>
       <div className="plat-toolbar">
         <div className="plat-search">
           <span className="plat-search-ico"><Icon.search size={16}/></span>
@@ -682,6 +686,7 @@ function CommunityPage() {
   return (
     <>
       <PageHead title="Community" sub="Your always-on home between events"/>
+      <FilterPanel placeholder="Search community members…" pills={['Title','Company','Country','Date joined']}/>
       <div className="comm-hero">
         <div className="comm-hero-emoji">🌐</div>
         <div style={{ flex: 1 }}>
@@ -996,6 +1001,7 @@ function SpacesPage({ onEnter }) {
     <>
       <PageHead title="My Spaces" sub="Jump into any of your live or persistent spaces"
         action={<button className="plat-cta"><Icon.plus size={16}/> New space</button>}/>
+      <FilterPanel placeholder="Search spaces…" pills={['Type','Owner','Country','Last visited']}/>
       <div className="spaces-layout">
         <aside className="spaces-side">
           <button className={`spaces-side-item ${scope === 'last' ? 'active' : ''}`} onClick={() => setScope('last')}>
