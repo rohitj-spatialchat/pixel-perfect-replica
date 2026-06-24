@@ -356,6 +356,17 @@ function EngagementView({ onToast }) {
           <div className="ex-sub">Polls, Q&amp;A, breakouts, live captions and gamification — switch on what you need.</div>
         </div>
 
+        <div className="ev-picker-toolbar">
+          <div className="ev-picker-search">
+            <Icon.search size={14}/>
+            <input placeholder="Search by name, email or company…" />
+          </div>
+          <button className="ev-picker-pill" type="button">Title <Icon.caretDown size={12}/></button>
+          <button className="ev-picker-pill" type="button">Company <Icon.caretDown size={12}/></button>
+          <button className="ev-picker-pill" type="button"><Icon.globe size={13}/> Country <Icon.caretDown size={12}/></button>
+          <button className="ev-picker-pill" type="button"><Icon.calendar size={13}/> Date joined <Icon.caretDown size={12}/></button>
+        </div>
+
         <ExSection title="Polls & quizzes"
           action={<button className="plat-cta" onClick={() => setPolls(p => [...p, { id: eid(), q: 'New poll', opts: ['Option 1','Option 2'], votes: 0 }])}><Icon.plus size={14}/> New poll</button>}>
           {polls.map(p => (
