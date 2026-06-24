@@ -538,7 +538,6 @@ function RecordingsPage() {
   return (
     <>
       <PageHead title="Recordings" sub="Recorded sessions — edit, set quality, create clips and share"/>
-      <FilterPanel placeholder="Search recordings…" pills={['Event','Host','Duration','Date']}/>
       <div className="people-scope">
         <button className={`people-scope-btn ${section === 'recordings' ? 'active' : ''}`} onClick={() => setSection('recordings')}>Recordings <span style={{ opacity: 0.6 }}>{recs.length}</span></button>
         <button className={`people-scope-btn ${section === 'clips' ? 'active' : ''}`} onClick={() => setSection('clips')}>Clips <span style={{ opacity: 0.6 }}>{clips.length}</span></button>
@@ -608,7 +607,6 @@ function RevenuePage() {
     <>
       <PageHead title="Revenue" sub="Ticket revenue by attendee and by company"
         action={<button className="plat-cta"><Icon.upload size={16}/> Export</button>}/>
-      <FilterPanel placeholder="Search attendee or company…" pills={['Ticket','Company','Country','Date']}/>
       <div className="plat-toolbar">
         <div className="plat-search">
           <span className="plat-search-ico"><Icon.search size={16}/></span>
