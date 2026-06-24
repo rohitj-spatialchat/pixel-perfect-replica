@@ -423,6 +423,18 @@ function EngagementPage() {
     <>
       <PageHead title="Engagement" sub="Polls, chat and live interaction across your events"
         action={<PlatFilter label="All events" options={['Thinkies World Congress', "Cecil's Virtual Lounge", 'All events']}/>}/>
+      <div className="ex-filter-card" style={{ marginBottom: 16 }}>
+        <div className="ev-picker-toolbar">
+          <div className="ev-picker-search">
+            <Icon.search size={14}/>
+            <input placeholder="Search by name, email or company…" />
+          </div>
+          <button className="ev-picker-pill" type="button">Title <Icon.caretDown size={12}/></button>
+          <button className="ev-picker-pill" type="button">Company <Icon.caretDown size={12}/></button>
+          <button className="ev-picker-pill" type="button"><Icon.globe size={13}/> Country <Icon.caretDown size={12}/></button>
+          <button className="ev-picker-pill" type="button"><Icon.calendar size={13}/> Date joined <Icon.caretDown size={12}/></button>
+        </div>
+      </div>
       <div className="plat-mini" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         {[[Icon.chart, e.stats.polls, 'Polls run'],[Icon.chat, e.stats.messages, 'Chat messages'],[Icon.broadcast, '174', 'Tracked actions'],[Icon.users, '7', 'Active facilitators']].map(([Ic, v, l]) => (
           <div key={l} className="plat-mini-tile">
